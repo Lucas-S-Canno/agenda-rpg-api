@@ -1,5 +1,6 @@
 package com.agendarpgadmin.api.controllers;
 
+import com.agendarpgadmin.api.dtos.EventDTO;
 import com.agendarpgadmin.api.dtos.ResponseDTO;
 import com.agendarpgadmin.api.dtos.UserDTO;
 import com.agendarpgadmin.api.services.UserService;
@@ -35,6 +36,22 @@ public class UserController {
         }
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ResponseDTO<UserDTO>> getUserById(@PathVariable Long id) {
+        try {
+            UserDTO user = userService.findById(id);
+            ResponseDTO<UserDTO> response = userService.getUserById(user);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ResponseDTO<UserDTO> response = new ResponseDTO<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+                    null
+            );
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
     @PostMapping
     public ResponseEntity<ResponseDTO<UserDTO>> createUser(@RequestBody UserDTO userDTO) {
         try {
@@ -50,6 +67,47 @@ public class UserController {
                     HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
                     null);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ResponseDTO<UserDTO>> updateUser(@PathVariable Long id, @RequestBody UserDTO userDTO) {
+        try {
+            UserDTO updatedUser = userService.update(id, userDTO);
+            ResponseDTO<UserDTO> response = new ResponseDTO<>(
+                    HttpStatus.OK.value(),
+                    HttpStatus.OK.getReasonPhrase(),
+                    updatedUser
+            );
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ResponseDTO<UserDTO> response = new ResponseDTO<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+                    null
+            );
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ResponseDTO<String>> deleteEvent(@PathVariable Long id) {
+        try {
+            UserDTO user = userService.findById(id);
+            userService.delete(id);
+            ResponseDTO<String> response = new ResponseDTO<>(
+                    HttpStatus.OK.value(),
+                    HttpStatus.OK.getReasonPhrase(),
+                    "Usuário deletado com sucesso: " + user.getNomeCompleto() + " (ID: " + user.getId() + " | email: " + user.getEmail() + ")"
+            );
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ResponseDTO<String> response = new ResponseDTO<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+                    null
+            );
+            return ResponseEntity.status(500).body(response);
         }
     }
 }
