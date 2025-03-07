@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -17,8 +18,11 @@ public class EventDTO {
     private String sistema;
     private String horario;
     private int numeroDeVagas;
-    private String descricao;
-    private List<String> tags;
     private String narrador;
-    private List<String> jogadores;
+    private String data;
+    private String local;
+    private List<String> jogadores = new ArrayList<>();
+    private String descricao;
+    private List<String> tags = new ArrayList<>();
+
 }

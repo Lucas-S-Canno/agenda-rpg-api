@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -46,10 +47,12 @@ public class EventService {
                 eventoEntity.getSistema(),
                 eventoEntity.getHorario(),
                 eventoEntity.getNumeroDeVagas(),
-                eventoEntity.getDescricao(),
-                eventoEntity.getTags(),
                 eventoEntity.getNarrador(),
-                eventoEntity.getJogadores()
+                eventoEntity.getData(),
+                eventoEntity.getLocal(),
+                Arrays.asList(eventoEntity.getJogadores().split(",")),
+                eventoEntity.getDescricao(),
+                Arrays.asList(eventoEntity.getTags().split(","))
         );
     }
 
@@ -60,10 +63,12 @@ public class EventService {
                 eventDTO.getSistema(),
                 eventDTO.getHorario(),
                 eventDTO.getNumeroDeVagas(),
-                eventDTO.getDescricao(),
-                eventDTO.getTags(),
                 eventDTO.getNarrador(),
-                eventDTO.getJogadores()
+                eventDTO.getData(),
+                eventDTO.getLocal(),
+                String.join(",", eventDTO.getJogadores()),
+                eventDTO.getDescricao(),
+                String.join(",", eventDTO.getTags())
         );
     }
 

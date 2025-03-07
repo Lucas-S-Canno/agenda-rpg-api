@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -31,19 +32,21 @@ public class EventEntity {
     @Column(name = "numero_de_vagas", nullable = false)
     private int numeroDeVagas;
 
-    @Column(name = "descricao", nullable = false)
-    private String descricao;
-
-    @ElementCollection
-    @CollectionTable(name = "evento_tags", joinColumns = @JoinColumn(name = "evento_id"))
-    @Column(name = "tag")
-    private List<String> tags;
-
     @Column(name = "narrador", nullable = false)
     private String narrador;
 
-    @ElementCollection
-    @CollectionTable(name = "evento_jogadores", joinColumns = @JoinColumn(name = "evento_id"))
-    @Column(name = "jogador")
-    private List<String> jogadores;
+    @Column(name = "data", nullable = false)
+    private String data;
+
+    @Column(name = "local", nullable = false)
+    private String local;
+
+    @Column(name = "tags")
+    private String tags;
+
+    @Column(name = "descricao", nullable = false)
+    private String descricao;
+
+    @Column(name = "jogadores")
+    private String jogadores;
 }
