@@ -1,0 +1,2 @@
+-- Criação da database agenda-rpg
+-- CREATE DATABASE "agenda-rpg";

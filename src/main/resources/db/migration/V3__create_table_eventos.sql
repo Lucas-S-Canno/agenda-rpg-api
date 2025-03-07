@@ -6,6 +6,7 @@ CREATE TABLE eventos (
                          horario VARCHAR(255) NOT NULL,                     -- Horário do evento
                          numero_de_vagas INT NOT NULL,                      -- Número de vagas do evento
                          descricao TEXT NOT NULL,                           -- Descrição do evento
-                         tags TEXT[] NOT NULL,                              -- Tags do evento (array de strings)
-                         narrador VARCHAR(255) NOT NULL                     -- Narrador do evento
+                         tags TEXT NOT NULL,                                -- Tags do evento
+                         narrador VARCHAR(255) NOT NULL,                    -- Narrador do evento
+                         jogadores VARCHAR(255) NOT NULL                    -- Jogadores
 );
