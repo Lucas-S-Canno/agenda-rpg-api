@@ -30,6 +30,10 @@ public class UserService {
         return user.map(this::convertToDTO).orElse(null);
     }
 
+    public List<UserDTO> getUsersByTipos(List<String> tipos) {
+        return userRepository.findByTipoIn(tipos).stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
+
     public UserDTO createUser(UserDTO userDTO) {
         UserEntity userEntity = convertToEntity(userDTO);
         userEntity = userRepository.save(userEntity);
