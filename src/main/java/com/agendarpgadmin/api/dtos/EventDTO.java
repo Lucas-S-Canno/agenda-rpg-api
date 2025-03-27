@@ -21,8 +21,8 @@ public class EventDTO {
     private String narrador;
     private String data;
     private String local;
-    private List<String> jogadores = new ArrayList<>();
-    private String descricao;
     private List<String> tags = new ArrayList<>();
+    private String descricao;
+    private List<String> jogadores = new ArrayList<>();
 
 }

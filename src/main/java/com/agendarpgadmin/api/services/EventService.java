@@ -50,10 +50,10 @@ public class EventService {
                 eventoEntity.getNarrador(),
                 eventoEntity.getData(),
                 eventoEntity.getLocal(),
-                Arrays.asList(eventoEntity.getJogadores().split(",")),
+                Arrays.asList(eventoEntity.getTags().split(",")),
                 eventoEntity.getDescricao(),
-                Arrays.asList(eventoEntity.getTags().split(","))
-        );
+                Arrays.asList(eventoEntity.getJogadores().split(","))
+                );
     }
 
     private EventEntity convertToEntity(EventDTO eventDTO) {
@@ -66,10 +66,10 @@ public class EventService {
                 eventDTO.getNarrador(),
                 eventDTO.getData(),
                 eventDTO.getLocal(),
-                String.join(",", eventDTO.getJogadores()),
+                String.join(",", eventDTO.getTags()),
                 eventDTO.getDescricao(),
-                String.join(",", eventDTO.getTags())
-        );
+                String.join(",", eventDTO.getJogadores())
+                );
     }
 
     public ResponseDTO<List<EventDTO>> getAllEventsListResponseDTO(List<EventDTO> events) {
