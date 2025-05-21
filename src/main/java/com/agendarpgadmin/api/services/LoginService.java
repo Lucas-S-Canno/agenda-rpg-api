@@ -16,6 +16,7 @@ public class LoginService {
     private UserRepository userRepository;
 
     private final String SECRET_KEY = "secretaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    private final long validityInMilliseconds = 86400000; // 1 dia
 
     public String authenticateUser(String email, String password) {
         UserEntity user = userRepository.findByEmail(email);
@@ -26,10 +27,14 @@ public class LoginService {
     }
 
     private String generateToken(UserEntity user) {
+        Date now = new Date();
+        Date validity = new Date(now.getTime() + validityInMilliseconds);
         return Jwts.builder()
                 .setSubject(user.getEmail())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 dia
+                .claim("nomeCompleto", user.getNomeCompleto())
+                .claim("tipo", user.getTipo())
+                .setIssuedAt(now)
+                .setExpiration(validity)
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
                 .compact();
     }
