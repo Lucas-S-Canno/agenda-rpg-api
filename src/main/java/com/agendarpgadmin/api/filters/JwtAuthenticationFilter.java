@@ -26,14 +26,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String authorizationHeader = request.getHeader("Authorization");
-
-        if(
-                (request.getRequestURI().equals("/api/login") && request.getMethod().equals("POST"))
-                || (request.getRequestURI().equals("/api/health") && request.getMethod().equals("GET"))
-        ) {
+        String path = request.getRequestURI();
+        if (path.startsWith("/api/public/") || path.equals("/api/login") || path.equals("/api/health")) {
             filterChain.doFilter(request, response);
             return;
         }
+
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token não fornecido");
             return;

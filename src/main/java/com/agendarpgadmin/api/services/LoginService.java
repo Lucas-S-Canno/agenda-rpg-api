@@ -33,6 +33,7 @@ public class LoginService {
                 .setSubject(user.getEmail())
                 .claim("nomeCompleto", user.getNomeCompleto())
                 .claim("tipo", user.getTipo())
+                .claim("id", user.getId())
                 .setIssuedAt(now)
                 .setExpiration(validity)
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
