@@ -3,9 +3,11 @@ package com.agendarpgadmin.api.services.UsersApp;
 import com.agendarpgadmin.api.dtos.ResponseDTO;
 import com.agendarpgadmin.api.dtos.UserDTO;
 import com.agendarpgadmin.api.entities.UserEntity;
+import com.agendarpgadmin.api.filters.JwtAuthenticationFilter;
 import com.agendarpgadmin.api.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -17,6 +19,7 @@ import java.util.stream.Collectors;
 public class UserInfoService {
     @Autowired
     private UserRepository userRepository;
+
 
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll().stream().map(this::convertToDTO).collect(Collectors.toList());
@@ -102,5 +105,10 @@ public class UserInfoService {
     private boolean isValidTipo(String tipo) {
         List<String> validTipos = Arrays.asList("JGD", "ADM", "NRD", "CRD");
         return validTipos.contains(tipo);
+    }
+
+    public UserDTO findByEmail(String email) {
+        Optional<UserEntity> user = userRepository.findByEmail(email);
+        return user.map(this::convertToDTO).orElse(null);
     }
 }

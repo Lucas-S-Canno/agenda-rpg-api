@@ -20,10 +20,11 @@ public class UserInfoController {
     @Autowired
     private UserInfoService userInfoService;
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ResponseDTO<UserDTO>> getUserById(@PathVariable Long id) {
+    @GetMapping("/me")
+    public ResponseEntity<ResponseDTO<UserDTO>> getAuthenticatedUser(org.springframework.security.core.Authentication authentication) {
         try {
-            UserDTO user = userInfoService.findById(id);
+            String email = authentication.getName();
+            UserDTO user = userInfoService.findByEmail(email); // Implemente este método no service
             ResponseDTO<UserDTO> response = userInfoService.getUserById(user);
             return ResponseEntity.ok(response);
         } catch (Exception e) {

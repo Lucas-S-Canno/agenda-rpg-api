@@ -19,7 +19,7 @@ public class LoginService {
     private final long validityInMilliseconds = 86400000; // 1 dia
 
     public String authenticateUser(String email, String password) {
-        UserEntity user = userRepository.findByEmail(email);
+        UserEntity user = userRepository.findByEmail(email).orElse(null);
         if (user != null && user.getPassword().equals(password)) {
             return generateToken(user);
         }
