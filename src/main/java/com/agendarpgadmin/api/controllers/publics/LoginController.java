@@ -1,4 +1,4 @@
-package com.agendarpgadmin.api.controllers;
+package com.agendarpgadmin.api.controllers.publics;
 
 import com.agendarpgadmin.api.dtos.LoginDTO;
 import com.agendarpgadmin.api.dtos.ResponseDTO;

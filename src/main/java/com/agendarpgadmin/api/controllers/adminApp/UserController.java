@@ -1,6 +1,5 @@
-package com.agendarpgadmin.api.controllers;
+package com.agendarpgadmin.api.controllers.adminApp;
 
-import com.agendarpgadmin.api.dtos.EventDTO;
 import com.agendarpgadmin.api.dtos.ResponseDTO;
 import com.agendarpgadmin.api.dtos.UserDTO;
 import com.agendarpgadmin.api.services.UserService;
