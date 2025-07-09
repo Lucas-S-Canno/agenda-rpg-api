@@ -68,6 +68,12 @@ public class UserAppEventService {
                 null
         );
     }
+    public List<EventDTO> getMyEvents(String userId) {
+        List<EventEntity> events = eventRepository.findByNarrador(userId);
+        return events.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
 
     private EventEntity convertToEntity(EventDTO dto) {
         EventEntity entity = new EventEntity();
@@ -109,4 +115,5 @@ public class UserAppEventService {
 
         return dto;
     }
+
 }

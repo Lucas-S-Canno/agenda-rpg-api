@@ -5,11 +5,15 @@ import com.agendarpgadmin.api.dtos.ResponseDTO;
 import com.agendarpgadmin.api.services.UsersApp.UserAppEventService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
+@Slf4j
 @RestController
 @RequestMapping("/user-app/event")
 public class UserEventController {
@@ -120,5 +124,52 @@ public class UserEventController {
     public ResponseEntity<ResponseDTO<EventDTO>> getEventById(@PathVariable Long id) {
         ResponseDTO<EventDTO> response = userAppEventService.getEventById(id);
         return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
+
+    @GetMapping("/my-events")
+    public ResponseEntity<ResponseDTO<List<EventDTO>>> getMyEvents(
+            @RequestHeader("Authorization") String authorizationHeader) {
+
+        try {
+            // Validar e extrair o token
+            if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                        new ResponseDTO<>(HttpStatus.UNAUTHORIZED.value(), "Token não fornecido", null)
+                );
+            }
+
+            String token = authorizationHeader.substring(7);
+
+            // Decodificar o token e verificar o tipo de usuário
+            Claims claims = Jwts.parser()
+                    .setSigningKey(SECRET_KEY)
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            String userType = claims.get("tipo", String.class);
+
+            // Verificar se o usuário é do tipo JGD (não autorizado)
+            if ("JGD".equals(userType)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                        new ResponseDTO<>(HttpStatus.UNAUTHORIZED.value(), "Usuário não pode acessar esses eventos", null)
+                );
+            }
+
+            // Obter os eventos do usuário
+            String userId = claims.get("id", Integer.class).toString();
+            log.info("Claims: {}", claims);
+            log.info("User ID: {}", claims.get("id", Integer.class).toString());
+            List<EventDTO> myEvents = userAppEventService.getMyEvents(userId);
+
+            return ResponseEntity.ok(
+                    new ResponseDTO<>(HttpStatus.OK.value(), "Eventos obtidos com sucesso", myEvents)
+            );
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    new ResponseDTO<>(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                            "Erro ao obter eventos: " + e.getMessage(), null)
+            );
+        }
     }
 }
