@@ -8,4 +8,6 @@ import java.util.List;
 
 public interface EventRepository extends JpaRepository<EventEntity, Long>, JpaSpecificationExecutor<EventEntity> {
     List<EventEntity> findByNarrador(String userId);
+
+    List<EventEntity> findByJogadoresContaining(String userId);
 }

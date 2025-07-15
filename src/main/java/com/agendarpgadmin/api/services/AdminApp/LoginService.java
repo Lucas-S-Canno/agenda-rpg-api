@@ -1,4 +1,4 @@
-package com.agendarpgadmin.api.services;
+package com.agendarpgadmin.api.services.AdminApp;
 
 import com.agendarpgadmin.api.entities.UserEntity;
 import com.agendarpgadmin.api.repositories.UserRepository;

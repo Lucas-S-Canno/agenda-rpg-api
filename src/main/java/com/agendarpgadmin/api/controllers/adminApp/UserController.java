@@ -2,7 +2,7 @@ package com.agendarpgadmin.api.controllers.adminApp;
 
 import com.agendarpgadmin.api.dtos.ResponseDTO;
 import com.agendarpgadmin.api.dtos.UserDTO;
-import com.agendarpgadmin.api.services.UserService;
+import com.agendarpgadmin.api.services.AdminApp.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

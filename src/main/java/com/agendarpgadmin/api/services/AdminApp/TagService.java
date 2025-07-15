@@ -1,4 +1,4 @@
-package com.agendarpgadmin.api.services;
+package com.agendarpgadmin.api.services.AdminApp;
 
 import com.agendarpgadmin.api.dtos.TagDTO;
 import com.agendarpgadmin.api.entities.TagEntity;

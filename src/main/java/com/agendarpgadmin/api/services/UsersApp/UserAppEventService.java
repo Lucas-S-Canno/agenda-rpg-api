@@ -4,8 +4,13 @@ import com.agendarpgadmin.api.dtos.EventDTO;
 import com.agendarpgadmin.api.dtos.ResponseDTO;
 import com.agendarpgadmin.api.entities.EventEntity;
 import com.agendarpgadmin.api.repositories.EventRepository;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -13,11 +18,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class UserAppEventService {
 
     @Autowired
     private EventRepository eventRepository;
+
+    @Value("${jwt.secret}")
+    private String SECRET_KEY;
 
     public EventDTO createEvent(EventDTO eventDTO) {
         EventEntity entity = convertToEntity(eventDTO);
@@ -75,6 +84,67 @@ public class UserAppEventService {
                 .collect(Collectors.toList());
     }
 
+    public EventDTO registerPlayerInEvent(Long eventId, String playerId) {
+        Optional<EventEntity> eventEntity = eventRepository.findById(eventId);
+
+        if (eventEntity.isPresent()) {
+            EventEntity entity = eventEntity.get();
+
+            // Criar lista mutável corretamente
+            List<String> jogadores = new java.util.ArrayList<>();
+            if (entity.getJogadores() != null && !entity.getJogadores().isEmpty()) {
+                jogadores.addAll(Arrays.asList(entity.getJogadores().split(",")));
+            }
+
+            if (jogadores.contains(playerId)) {
+                return convertToDTO(entity);
+            }
+
+            // Adicionar o jogador à lista
+            jogadores.add(playerId);
+            entity.setJogadores(String.join(",", jogadores));
+
+            EventEntity updatedEntity = eventRepository.save(entity);
+            return convertToDTO(updatedEntity);
+        }
+
+        return null; // Evento não encontrado
+    }
+
+    public List<EventDTO> getRegisteredEvents(String userId) {
+        List<EventEntity> events = eventRepository.findByJogadoresContaining(userId);
+        return events.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public EventDTO unregisterPlayerFromEvent(Long id, String userId) {
+        Optional<EventEntity> eventEntity = eventRepository.findById(id);
+
+        if (eventEntity.isPresent()) {
+            EventEntity entity = eventEntity.get();
+
+            // Criar lista mutável corretamente
+            List<String> jogadores = new java.util.ArrayList<>();
+            if (entity.getJogadores() != null && !entity.getJogadores().isEmpty()) {
+                jogadores.addAll(Arrays.asList(entity.getJogadores().split(",")));
+            }
+
+            if (!jogadores.contains(userId)) {
+                return convertToDTO(entity); // Jogador não está registrado
+            }
+
+            // Remover o jogador da lista
+            jogadores.remove(userId);
+            entity.setJogadores(String.join(",", jogadores));
+
+            EventEntity updatedEntity = eventRepository.save(entity);
+            return convertToDTO(updatedEntity);
+        }
+
+        return null; // Evento não encontrado
+    }
+
     private EventEntity convertToEntity(EventDTO dto) {
         EventEntity entity = new EventEntity();
         entity.setId(dto.getId());
@@ -115,5 +185,4 @@ public class UserAppEventService {
 
         return dto;
     }
-
 }
