@@ -4,6 +4,7 @@ import com.agendarpgadmin.api.dtos.ResponseDTO;
 import com.agendarpgadmin.api.dtos.UserDTO;
 import com.agendarpgadmin.api.entities.UserEntity;
 import com.agendarpgadmin.api.repositories.UserRepository;
+import com.agendarpgadmin.api.services.Utils.UtilsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -19,23 +20,26 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private UtilsService utilsService;
+
     public List<UserDTO> getAllUsers() {
-        return userRepository.findAll().stream().map(this::convertToDTO).collect(Collectors.toList());
+        return userRepository.findAll().stream().map(utilsService::convertToDTO).collect(Collectors.toList());
     }
 
     public UserDTO findById(Long id) {
         Optional<UserEntity> user = userRepository.findById(id);
-        return user.map(this::convertToDTO).orElse(null);
+        return user.map(utilsService::convertToDTO).orElse(null);
     }
 
     public List<UserDTO> getUsersByTipos(List<String> tipos) {
-        return userRepository.findByTipoIn(tipos).stream().map(this::convertToDTO).collect(Collectors.toList());
+        return userRepository.findByTipoIn(tipos).stream().map(utilsService::convertToDTO).collect(Collectors.toList());
     }
 
     public UserDTO createUser(UserDTO userDTO) {
-        UserEntity userEntity = convertToEntity(userDTO);
+        UserEntity userEntity = utilsService.convertToEntity(userDTO);
         userEntity = userRepository.save(userEntity);
-        return convertToDTO(userEntity);
+        return utilsService.convertToDTO(userEntity);
     }
 
     public ResponseDTO<UserDTO> getUserById(UserDTO user) {
@@ -61,47 +65,10 @@ public class UserService {
     }
 
     public UserDTO update(Long id, UserDTO user) {
-        UserEntity userEntity = convertToEntity(user);
+        UserEntity userEntity = utilsService.convertToEntity(user);
         userEntity.setId(id);
         userEntity = userRepository.save(userEntity);
-        return convertToDTO(userEntity);
+        return utilsService.convertToDTO(userEntity);
     }
 
-    private UserDTO convertToDTO(UserEntity userEntity) {
-        return new UserDTO(
-                userEntity.getId(),
-                userEntity.getEmail(),
-                userEntity.getPassword(),
-                userEntity.getNomeCompleto(),
-                userEntity.getDataDeNascimento(),
-                userEntity.getTipo(),
-                userEntity.getTelefone(),
-                userEntity.getMenor(),
-                userEntity.getResponsavel(),
-                userEntity.getTelefoneResponsavel()
-        );
-    }
-
-    private UserEntity convertToEntity(UserDTO userDTO) {
-        if (!isValidTipo(userDTO.getTipo())) {
-            throw new IllegalArgumentException("Tipo inválido: " + userDTO.getTipo());
-        }
-        return new UserEntity(
-                userDTO.getId(),
-                userDTO.getEmail(),
-                userDTO.getPassword(),
-                userDTO.getNomeCompleto(),
-                userDTO.getDataDeNascimento(),
-                userDTO.getTipo(),
-                userDTO.getTelefone(),
-                userDTO.getMenor(),
-                userDTO.getResponsavel(),
-                userDTO.getTelefoneResponsavel()
-        );
-    }
-
-    private boolean isValidTipo(String tipo) {
-        List<String> validTipos = Arrays.asList("JGD", "ADM", "NRD", "CRD");
-        return validTipos.contains(tipo);
-    }
 }
