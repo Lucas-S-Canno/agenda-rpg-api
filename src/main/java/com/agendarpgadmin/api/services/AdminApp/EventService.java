@@ -20,7 +20,8 @@ public class EventService {
     private EventRepository eventoRepository;
 
     public List<EventDTO> findAll() {
-        return eventoRepository.findAll().stream()
+        // Admin: todos eventos, do mais novo para o mais antigo
+        return eventoRepository.findAllByOrderByDataDesc().stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
@@ -113,5 +114,13 @@ public class EventService {
         eventoEntity.setId(id);
         eventoEntity = eventoRepository.save(eventoEntity);
         return convertToDTO(eventoEntity);
+    }
+
+    public List<EventDTO> getUpcomingEvents() {
+        String today = java.time.LocalDate.now().toString();
+        return eventoRepository.findByDataGreaterThanEqualOrderByDataAsc(today)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 }

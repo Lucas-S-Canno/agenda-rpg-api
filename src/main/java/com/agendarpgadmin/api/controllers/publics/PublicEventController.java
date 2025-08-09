@@ -23,7 +23,7 @@ public class PublicEventController {
     @GetMapping
     public ResponseEntity<ResponseDTO<List<EventDTO>>> getAllEvents() {
         try {
-            List<EventDTO> events = eventService.findAll();
+            List<EventDTO> events = eventService.getUpcomingEvents();
             ResponseDTO<List<EventDTO>> response = eventService.getAllEventsListResponseDTO(events);
             return ResponseEntity.ok(response);
         } catch (Exception e) {

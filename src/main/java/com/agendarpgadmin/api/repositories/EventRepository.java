@@ -10,4 +10,8 @@ public interface EventRepository extends JpaRepository<EventEntity, Long>, JpaSp
     List<EventEntity> findByNarrador(String userId);
 
     List<EventEntity> findByJogadoresContaining(String userId);
+
+    List<EventEntity> findByDataGreaterThanEqualOrderByDataAsc(String data);
+
+    List<EventEntity> findAllByOrderByDataDesc();
 }

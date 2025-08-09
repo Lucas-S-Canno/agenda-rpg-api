@@ -145,6 +145,22 @@ public class UserAppEventService {
         return null; // Evento não encontrado
     }
 
+    public List<EventDTO> getUpcomingMyEvents(String userId) {
+        String today = java.time.LocalDate.now().toString();
+        return eventRepository.findByNarrador(userId).stream()
+                .filter(e -> e.getData().compareTo(today) >= 0)
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<EventDTO> getUpcomingRegisteredEvents(String userId) {
+        String today = java.time.LocalDate.now().toString();
+        return eventRepository.findByJogadoresContaining(userId).stream()
+                .filter(e -> e.getData().compareTo(today) >= 0)
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
     private EventEntity convertToEntity(EventDTO dto) {
         EventEntity entity = new EventEntity();
         entity.setId(dto.getId());
