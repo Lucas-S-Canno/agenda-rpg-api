@@ -20,4 +20,5 @@ public class UserDTO {
     private String menor;
     private String responsavel;
     private String telefoneResponsavel;
+    private String apelido;
 }

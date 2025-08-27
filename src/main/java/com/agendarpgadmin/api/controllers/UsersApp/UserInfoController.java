@@ -46,12 +46,12 @@ public class UserInfoController {
             UserDTO narrator = userInfoService.findById(narratorId);
             NarratorProfileDTO profile = new NarratorProfileDTO(
                     narrator.getId(),
-                    narrator.getNomeCompleto(),
+                    narrator.getApelido(),
                     narrator.getEmail()
             );
             ResponseDTO<NarratorProfileDTO> response = new ResponseDTO<>(
                     HttpStatus.OK.value(),
-                    "Narrador encontrado: " + narrator.getNomeCompleto(),
+                    "Narrador encontrado: " + narrator.getApelido(),
                     profile
             );
             return ResponseEntity.ok(response);

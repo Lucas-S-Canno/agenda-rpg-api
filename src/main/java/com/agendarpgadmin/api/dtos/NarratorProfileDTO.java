@@ -11,7 +11,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class NarratorProfileDTO {
     private Long id;
-    private String nomeCompleto;
+    private String apelido;
     private String email;
 }
-

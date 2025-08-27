@@ -80,7 +80,8 @@ public class UserInfoService {
                 userEntity.getTelefone(),
                 userEntity.getMenor(),
                 userEntity.getResponsavel(),
-                userEntity.getTelefoneResponsavel()
+                userEntity.getTelefoneResponsavel(),
+                userEntity.getApelido()
         );
     }
 
@@ -98,7 +99,8 @@ public class UserInfoService {
                 userDTO.getTelefone(),
                 userDTO.getMenor(),
                 userDTO.getResponsavel(),
-                userDTO.getTelefoneResponsavel()
+                userDTO.getTelefoneResponsavel(),
+                userDTO.getApelido()
         );
     }
 
