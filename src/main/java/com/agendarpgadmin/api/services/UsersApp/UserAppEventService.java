@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -94,15 +95,21 @@ public class UserAppEventService {
             List<String> jogadores = new java.util.ArrayList<>();
             if (entity.getJogadores() != null && !entity.getJogadores().isEmpty()) {
                 jogadores.addAll(Arrays.asList(entity.getJogadores().split(",")));
+                // Remover elementos vazios
+                jogadores = jogadores.stream().filter(j -> j != null && !j.trim().isEmpty()).collect(Collectors.toList());
             }
 
             if (jogadores.contains(playerId)) {
                 return convertToDTO(entity);
             }
 
+            System.out.println("Jogadores antes da adição: " + entity.getJogadores());
+
             // Adicionar o jogador à lista
             jogadores.add(playerId);
             entity.setJogadores(String.join(",", jogadores));
+
+            System.out.println("Jogadores atualizados: " + entity.getJogadores());
 
             EventEntity updatedEntity = eventRepository.save(entity);
             return convertToDTO(updatedEntity);
@@ -128,6 +135,8 @@ public class UserAppEventService {
             List<String> jogadores = new java.util.ArrayList<>();
             if (entity.getJogadores() != null && !entity.getJogadores().isEmpty()) {
                 jogadores.addAll(Arrays.asList(entity.getJogadores().split(",")));
+                // Remover elementos vazios
+                jogadores = jogadores.stream().filter(j -> j != null && !j.trim().isEmpty()).collect(Collectors.toList());
             }
 
             if (!jogadores.contains(userId)) {
@@ -196,7 +205,12 @@ public class UserAppEventService {
         dto.setDescricao(entity.getDescricao());
 
         if (entity.getJogadores() != null && !entity.getJogadores().isEmpty()) {
-            dto.setJogadores(Arrays.asList(entity.getJogadores().split(",")));
+            List<String> jogadoresLimpos = Arrays.stream(entity.getJogadores().split(","))
+                    .filter(jogador -> jogador != null && !jogador.trim().isEmpty())
+                    .collect(Collectors.toList());
+            dto.setJogadores(jogadoresLimpos);
+        } else {
+            dto.setJogadores(new ArrayList<>());
         }
 
         return dto;

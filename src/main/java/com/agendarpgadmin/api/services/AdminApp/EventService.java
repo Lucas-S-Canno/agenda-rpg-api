@@ -42,6 +42,9 @@ public class EventService {
     }
 
     private EventDTO convertToDTO(EventEntity eventoEntity) {
+        List<String> jogadores = Arrays.stream(eventoEntity.getJogadores().split(","))
+            .filter(j -> j != null && !j.trim().isEmpty())
+            .collect(Collectors.toList());
         return new EventDTO(
                 eventoEntity.getId(),
                 eventoEntity.getTitulo(),
@@ -53,7 +56,7 @@ public class EventService {
                 eventoEntity.getLocal(),
                 Arrays.asList(eventoEntity.getTags().split(",")),
                 eventoEntity.getDescricao(),
-                Arrays.asList(eventoEntity.getJogadores().split(","))
+                jogadores
                 );
     }
 

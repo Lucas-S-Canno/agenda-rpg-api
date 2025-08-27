@@ -7,6 +7,8 @@ import com.agendarpgadmin.api.services.Utils.UtilsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class PublicUserService {
 
@@ -20,6 +22,11 @@ public class PublicUserService {
         UserEntity userEntity = utilsService.convertToEntity(userDTO);
         userEntity = userRepository.save(userEntity);
         return utilsService.convertToDTO(userEntity);
+    }
+
+    public UserDTO findById(Long id) {
+        Optional<UserEntity> user = userRepository.findById(id);
+        return user.map(utilsService::convertToDTO).orElse(null);
     }
 
 }

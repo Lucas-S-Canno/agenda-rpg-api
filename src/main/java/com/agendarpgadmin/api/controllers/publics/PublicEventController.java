@@ -3,6 +3,7 @@ package com.agendarpgadmin.api.controllers.publics;
 import com.agendarpgadmin.api.dtos.EventDTO;
 import com.agendarpgadmin.api.dtos.ResponseDTO;
 import com.agendarpgadmin.api.services.AdminApp.EventService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/public/event")
 public class PublicEventController {
@@ -24,9 +26,11 @@ public class PublicEventController {
     public ResponseEntity<ResponseDTO<List<EventDTO>>> getAllEvents() {
         try {
             List<EventDTO> events = eventService.getUpcomingEvents();
+            log.info("Eventos retornados: {}", events);
             ResponseDTO<List<EventDTO>> response = eventService.getAllEventsListResponseDTO(events);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            log.error("Erro ao buscar eventos", e);
             ResponseDTO<List<EventDTO>> response = new ResponseDTO<>(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
                     HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),

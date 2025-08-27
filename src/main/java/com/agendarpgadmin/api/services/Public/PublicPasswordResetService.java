@@ -3,6 +3,7 @@ package com.agendarpgadmin.api.services.Public;
 import com.agendarpgadmin.api.entities.PasswordResetCodeEntity;
 import com.agendarpgadmin.api.repositories.PasswordResetCodeRepository;
 import com.agendarpgadmin.api.repositories.UserRepository;
+import com.agendarpgadmin.api.services.Utils.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
@@ -15,13 +16,18 @@ public class PublicPasswordResetService {
     private PasswordResetCodeRepository codeRepository;
 
     @Autowired
-    private UserRepository userRepository; // supondo que já existe
+    private UserRepository userRepository;
+
+    @Autowired
+    private EmailService emailService;
 
     public void requestResetCode(String email) {
-        String code = UUID.randomUUID().toString().substring(0, 5).toUpperCase();
+        var userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            throw new RuntimeException("Email não encontrado");
+        }
 
-        // Log temporário para teste
-        System.out.println("CÓDIGO GERADO PARA " + email + ": " + code);
+        String code = UUID.randomUUID().toString().substring(0, 5).toUpperCase();
 
         PasswordResetCodeEntity entity = new PasswordResetCodeEntity();
         entity.setEmail(email);
@@ -29,7 +35,11 @@ public class PublicPasswordResetService {
         entity.setExpiresAt(LocalDateTime.now().plusMinutes(15));
         entity.setUsed(false);
         codeRepository.save(entity);
-        // Aqui você pode disparar o envio do e-mail futuramente
+
+        // Enviar email com o código
+        emailService.sendResetCode(email, code);
+
+        System.out.println("CÓDIGO GERADO PARA " + email + ": " + code); // Manter por enquanto para debug
     }
 
     public String validateResetCode(String email, String code) {
