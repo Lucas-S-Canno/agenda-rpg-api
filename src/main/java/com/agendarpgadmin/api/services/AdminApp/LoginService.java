@@ -21,6 +21,10 @@ public class LoginService {
     public String authenticateUser(String email, String password) {
         UserEntity user = userRepository.findByEmail(email).orElse(null);
         if (user != null && user.getPassword().equals(password)) {
+            // Verificar se o email foi verificado
+            if (!Boolean.TRUE.equals(user.getEmailVerified())) {
+                throw new IllegalStateException("Email não verificado");
+            }
             return generateToken(user);
         }
         return null;

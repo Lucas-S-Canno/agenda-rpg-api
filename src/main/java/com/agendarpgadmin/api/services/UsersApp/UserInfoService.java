@@ -83,7 +83,8 @@ public class UserInfoService {
                 userEntity.getMenor(),
                 userEntity.getResponsavel(),
                 userEntity.getTelefoneResponsavel(),
-                userEntity.getApelido()
+                userEntity.getApelido(),
+                userEntity.getEmailVerified()
         );
     }
 
@@ -102,7 +103,8 @@ public class UserInfoService {
                 userDTO.getMenor(),
                 userDTO.getResponsavel(),
                 userDTO.getTelefoneResponsavel(),
-                userDTO.getApelido()
+                userDTO.getApelido(),
+                userDTO.getEmailVerified()
         );
     }
 

@@ -1,0 +1,80 @@
+# file: 'docker-compose.yml'
+version: "3.8"
+services:
+  postgres:
+    image: postgres:16
+    container_name: agenda_rpg_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-agenda_rpg}
+      POSTGRES_USER: ${POSTGRES_USER:-agenda}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-agenda}
+    ports:
+      - "${PG_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-agenda} -d ${POSTGRES_DB:-agenda_rpg}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: agenda_rpg_mail
+    restart: unless-stopped
+    ports:
+      - "${MAILPIT_SMTP_PORT:-1025}:1025"  # SMTP
+      - "${MAILPIT_UI_PORT:-8025}:8025"    # Web UI
+
+volumes:
+  pgdata:
+
+# file: '.env'
+  POSTGRES_DB=agenda_rpg
+  POSTGRES_USER=agenda
+  POSTGRES_PASSWORD=agenda
+  PG_PORT=5432
+  MAILPIT_SMTP_PORT=1025
+  MAILPIT_UI_PORT=8025
+
+# file: 'src/main/resources/application-local.yml'
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:${PG_PORT:5432}/${POSTGRES_DB:agenda_rpg}
+    username: ${POSTGRES_USER:agenda}
+    password: ${POSTGRES_PASSWORD:agenda}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    enabled: true
+  mail:
+    host: localhost
+    port: ${MAILPIT_SMTP_PORT:1025}
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+server:
+  port: 8080
+
+# Comandos (PowerShell) para subir/gerenciar dependências:
+# Subir em segundo plano
+#   docker compose up -d
+# Ver status/health
+#   docker compose ps
+# Logs (p.ex., do PostgreSQL)
+#   docker compose logs -f postgres
+# Parar e remover containers
+#   docker compose down
+# Resetar banco (apaga volume)
+#   docker compose down -v
+
+# Definir o profile local (opcional via ambiente ou configuração da IDE)
+#   setx SPRING_PROFILES_ACTIVE local

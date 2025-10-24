@@ -38,4 +38,6 @@ public class UserEntity implements Serializable {
     private String telefoneResponsavel;
     @Column(name = "apelido")
     private String apelido;
+    @Column(name = "email_verified")
+    private Boolean emailVerified = false;
 }

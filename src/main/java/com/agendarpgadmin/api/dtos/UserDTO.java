@@ -21,4 +21,5 @@ public class UserDTO {
     private String responsavel;
     private String telefoneResponsavel;
     private String apelido;
+    private Boolean emailVerified;
 }
