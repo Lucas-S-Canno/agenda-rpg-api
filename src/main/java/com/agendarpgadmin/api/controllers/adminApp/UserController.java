@@ -17,6 +17,30 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+//    New Endpoints
+
+   @PostMapping("/validate-admin")
+   public ResponseEntity<ResponseDTO<Boolean>> validateAdminUser(@RequestHeader("Authorization") String token) {
+       try {
+           UserDTO validatedUser = userService.validateAdminUser(token);
+           ResponseDTO<Boolean> response = new ResponseDTO<>(
+                   HttpStatus.OK.value(),
+                   HttpStatus.OK.getReasonPhrase(),
+                   Boolean.TRUE
+           );
+           return ResponseEntity.ok(response);
+       } catch (Exception e) {
+           ResponseDTO<Boolean> response = new ResponseDTO<>(
+                   HttpStatus.UNAUTHORIZED.value(),
+                   "Usuário não autorizado ou não é administrador",
+                   Boolean.FALSE
+           );
+           return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+       }
+   }
+
+
+//    OLD
 
     @GetMapping
     public ResponseEntity<ResponseDTO<List<UserDTO>>> getAllUsers() {
