@@ -4,12 +4,14 @@ import com.agendarpgadmin.api.dtos.ResponseDTO;
 import com.agendarpgadmin.api.dtos.UserDTO;
 import com.agendarpgadmin.api.services.AdminApp.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/user")
@@ -39,6 +41,40 @@ public class UserController {
        }
    }
 
+    @GetMapping("/search")
+    public ResponseEntity<ResponseDTO<Page<UserDTO>>> searchUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "3") int size,
+            @RequestParam(required = false) String tipos, // ex: "ADM,CRD"
+            @RequestParam(required = false) String menor, // "S" ou "N"
+            @RequestParam(defaultValue = "nomeCompleto") String sort, // nomeCompleto|email|apelido
+            @RequestParam(defaultValue = "asc") String dir // asc|desc
+    ) {
+        try {
+            List<String> tiposList = tipos == null || tipos.isBlank()
+                    ? null
+                    : Arrays.stream(tipos.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .collect(Collectors.toList());
+
+            Page<UserDTO> pageResult = userService.searchUsers(page, size, tiposList, menor, sort, dir);
+
+            ResponseDTO<Page<UserDTO>> response = new ResponseDTO<>(
+                    HttpStatus.OK.value(),
+                    HttpStatus.OK.getReasonPhrase(),
+                    pageResult
+            );
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ResponseDTO<Page<UserDTO>> response = new ResponseDTO<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
 
 //    OLD
 
