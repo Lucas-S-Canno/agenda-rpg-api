@@ -48,9 +48,13 @@ public class UserController {
             @RequestParam(required = false) String tipos, // ex: "ADM,CRD"
             @RequestParam(required = false) String menor, // "S" ou "N"
             @RequestParam(defaultValue = "nomeCompleto") String sort, // nomeCompleto|email|apelido
-            @RequestParam(defaultValue = "asc") String dir // asc|desc
+            @RequestParam(defaultValue = "asc") String dir, // asc|desc
+            @RequestHeader("Authorization") String token
     ) {
         try {
+            // Validar se o usuário é admin ou coordenador
+            userService.validateAdminUser(token);
+
             List<String> tiposList = tipos == null || tipos.isBlank()
                     ? null
                     : Arrays.stream(tipos.split(","))
@@ -66,6 +70,20 @@ public class UserController {
                     pageResult
             );
             return ResponseEntity.ok(response);
+        } catch (SecurityException e) {
+            ResponseDTO<Page<UserDTO>> response = new ResponseDTO<>(
+                    HttpStatus.FORBIDDEN.value(),
+                    "Acesso negado: Apenas administradores ou coordenadores podem acessar este recurso",
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+        } catch (IllegalArgumentException e) {
+            ResponseDTO<Page<UserDTO>> response = new ResponseDTO<>(
+                    HttpStatus.UNAUTHORIZED.value(),
+                    "Token inválido ou usuário não encontrado",
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         } catch (Exception e) {
             ResponseDTO<Page<UserDTO>> response = new ResponseDTO<>(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
