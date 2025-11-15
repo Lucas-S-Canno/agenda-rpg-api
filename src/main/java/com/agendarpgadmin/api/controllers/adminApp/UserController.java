@@ -44,7 +44,7 @@ public class UserController {
     @GetMapping("/search")
     public ResponseEntity<ResponseDTO<Page<UserDTO>>> searchUsers(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "3") int size,
+            @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String tipos, // ex: "ADM,CRD"
             @RequestParam(required = false) String menor, // "S" ou "N"
             @RequestParam(defaultValue = "nomeCompleto") String sort, // nomeCompleto|email|apelido
@@ -94,11 +94,135 @@ public class UserController {
         }
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<ResponseDTO<UserDTO>> updateUser(
+            @PathVariable Long id,
+            @RequestBody UserDTO userDTO,
+            @RequestHeader("Authorization") String token
+    ) {
+        try {
+            // Validar se o usuário é admin ou coordenador
+            userService.validateAdminUser(token);
+
+            UserDTO updatedUser = userService.update(id, userDTO);
+            ResponseDTO<UserDTO> response = new ResponseDTO<>(
+                    HttpStatus.OK.value(),
+                    HttpStatus.OK.getReasonPhrase(),
+                    updatedUser
+            );
+            return ResponseEntity.ok(response);
+        } catch (SecurityException e) {
+            ResponseDTO<UserDTO> response = new ResponseDTO<>(
+                    HttpStatus.FORBIDDEN.value(),
+                    "Acesso negado: Apenas administradores ou coordenadores podem acessar este recurso",
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+        } catch (IllegalArgumentException e) {
+            ResponseDTO<UserDTO> response = new ResponseDTO<>(
+                    HttpStatus.UNAUTHORIZED.value(),
+                    "Token inválido ou usuário não encontrado",
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        } catch (Exception e) {
+            ResponseDTO<UserDTO> response = new ResponseDTO<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+                    null
+            );
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ResponseDTO<String>> deleteEvent(
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String token
+    ) {
+        try {
+            // Validar se o usuário é admin ou coordenador
+            userService.validateAdminUser(token);
+
+            UserDTO user = userService.findById(id);
+            userService.delete(id);
+            ResponseDTO<String> response = new ResponseDTO<>(
+                    HttpStatus.OK.value(),
+                    HttpStatus.OK.getReasonPhrase(),
+                    "Usuário deletado com sucesso: " + user.getNomeCompleto() + " (ID: " + user.getId() + " | email: " + user.getEmail() + ")"
+            );
+            return ResponseEntity.ok(response);
+        } catch (SecurityException e) {
+            ResponseDTO<String> response = new ResponseDTO<>(
+                    HttpStatus.FORBIDDEN.value(),
+                    "Acesso negado: Apenas administradores ou coordenadores podem acessar este recurso",
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+        } catch (IllegalArgumentException e) {
+            ResponseDTO<String> response = new ResponseDTO<>(
+                    HttpStatus.UNAUTHORIZED.value(),
+                    "Token inválido ou usuário não encontrado",
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        } catch (Exception e) {
+            ResponseDTO<String> response = new ResponseDTO<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+                    null
+            );
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    @PostMapping
+    public ResponseEntity<ResponseDTO<UserDTO>> createUser(
+            @RequestBody UserDTO userDTO,
+            @RequestHeader("Authorization") String token
+    ) {
+        try {
+            // Validar se o usuário é admin ou coordenador
+            userService.validateAdminUser(token);
+
+            UserDTO createdUser = userService.createUser(userDTO);
+            ResponseDTO<UserDTO> response = new ResponseDTO<>(
+                    HttpStatus.CREATED.value(),
+                    HttpStatus.CREATED.getReasonPhrase(),
+                    createdUser);
+            return ResponseEntity.ok(response);
+        } catch (SecurityException e) {
+            ResponseDTO<UserDTO> response = new ResponseDTO<>(
+                    HttpStatus.FORBIDDEN.value(),
+                    "Acesso negado: Apenas administradores ou coordenadores podem acessar este recurso",
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+        } catch (IllegalArgumentException e) {
+            ResponseDTO<UserDTO> response = new ResponseDTO<>(
+                    HttpStatus.UNAUTHORIZED.value(),
+                    "Token inválido ou usuário não encontrado",
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        } catch (Exception e) {
+            ResponseDTO<UserDTO> response = new ResponseDTO<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+                    null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
 //    OLD
 
     @GetMapping
-    public ResponseEntity<ResponseDTO<List<UserDTO>>> getAllUsers() {
+    public ResponseEntity<ResponseDTO<List<UserDTO>>> getAllUsers(
+            @RequestHeader("Authorization") String token
+    ) {
         try {
+            userService.validateAdminUser(token);
+
             List<UserDTO> users = userService.getAllUsers();
             ResponseDTO<List<UserDTO>> response = new ResponseDTO<>(
                     HttpStatus.OK.value(),
@@ -114,97 +238,4 @@ public class UserController {
         }
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ResponseDTO<UserDTO>> getUserById(@PathVariable Long id) {
-        try {
-            UserDTO user = userService.findById(id);
-            ResponseDTO<UserDTO> response = userService.getUserById(user);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            ResponseDTO<UserDTO> response = new ResponseDTO<>(
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
-                    null
-            );
-            return ResponseEntity.status(500).body(response);
-        }
-    }
-
-    @PostMapping
-    public ResponseEntity<ResponseDTO<UserDTO>> createUser(@RequestBody UserDTO userDTO) {
-        try {
-            UserDTO createdUser = userService.createUser(userDTO);
-            ResponseDTO<UserDTO> response = new ResponseDTO<>(
-                    HttpStatus.CREATED.value(),
-                    HttpStatus.CREATED.getReasonPhrase(),
-                    createdUser);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            ResponseDTO<UserDTO> response = new ResponseDTO<>(
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
-                    null);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<ResponseDTO<UserDTO>> updateUser(@PathVariable Long id, @RequestBody UserDTO userDTO) {
-        try {
-            UserDTO updatedUser = userService.update(id, userDTO);
-            ResponseDTO<UserDTO> response = new ResponseDTO<>(
-                    HttpStatus.OK.value(),
-                    HttpStatus.OK.getReasonPhrase(),
-                    updatedUser
-            );
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            ResponseDTO<UserDTO> response = new ResponseDTO<>(
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
-                    null
-            );
-            return ResponseEntity.status(500).body(response);
-        }
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ResponseDTO<String>> deleteEvent(@PathVariable Long id) {
-        try {
-            UserDTO user = userService.findById(id);
-            userService.delete(id);
-            ResponseDTO<String> response = new ResponseDTO<>(
-                    HttpStatus.OK.value(),
-                    HttpStatus.OK.getReasonPhrase(),
-                    "Usuário deletado com sucesso: " + user.getNomeCompleto() + " (ID: " + user.getId() + " | email: " + user.getEmail() + ")"
-            );
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            ResponseDTO<String> response = new ResponseDTO<>(
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
-                    null
-            );
-            return ResponseEntity.status(500).body(response);
-        }
-    }
-
-    @GetMapping("/narradores")
-    public ResponseEntity<ResponseDTO<List<UserDTO>>> getNarradores() {
-        try {
-            List<String> tipos = Arrays.asList("NRD", "ADM", "CRD");
-            List<UserDTO> users = userService.getUsersByTipos(tipos);
-            ResponseDTO<List<UserDTO>> response = new ResponseDTO<>(
-                    HttpStatus.OK.value(),
-                    HttpStatus.OK.getReasonPhrase(),
-                    users);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            ResponseDTO<List<UserDTO>> response = new ResponseDTO<>(
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
-                    null);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
-    }
 }
