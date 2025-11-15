@@ -5,11 +5,18 @@ import com.agendarpgadmin.api.dtos.UserDTO;
 import com.agendarpgadmin.api.entities.UserEntity;
 import com.agendarpgadmin.api.repositories.UserRepository;
 import com.agendarpgadmin.api.services.Utils.UtilsService;
+import com.agendarpgadmin.api.services.Utils.JwtUtilsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
+import jakarta.persistence.criteria.Predicate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -22,6 +29,53 @@ public class UserService {
 
     @Autowired
     private UtilsService utilsService;
+
+    @Autowired
+    private JwtUtilsService jwtUtilsService;
+
+    public Page<UserDTO> searchUsers(
+            int page,
+            int size,
+            List<String> tipos,
+            String menor,
+            String sortField,
+            String sortDir
+    ) {
+        // Normalizar campo de ordenação
+        String field;
+        if ("email".equalsIgnoreCase(sortField)) {
+            field = "email";
+        } else if ("apelido".equalsIgnoreCase(sortField)) {
+            field = "apelido";
+        } else {
+            field = "nomeCompleto";
+        }
+
+        // Direção da ordenação
+        Sort.Direction direction = "desc".equalsIgnoreCase(sortDir) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(Math.max(0, page), Math.max(1, size), Sort.by(direction, field));
+
+        // Construir Specification para filtros dinâmicos
+        Specification<UserEntity> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            // Filtro por tipos
+            if (tipos != null && !tipos.isEmpty()) {
+                predicates.add(root.get("tipo").in(tipos));
+            }
+
+            // Filtro por menor
+            if (menor != null && (menor.equalsIgnoreCase("S") || menor.equalsIgnoreCase("N"))) {
+                predicates.add(cb.equal(cb.upper(root.get("menor")), menor.toUpperCase()));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        // Buscar página de entidades e converter para DTO
+        Page<UserEntity> pageEntity = userRepository.findAll(spec, pageable);
+        return pageEntity.map(utilsService::convertToDTO);
+    }
 
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll().stream().map(utilsService::convertToDTO).collect(Collectors.toList());
@@ -71,4 +125,30 @@ public class UserService {
         return utilsService.convertToDTO(userEntity);
     }
 
+    public UserDTO validateAdminUser(String token) {
+        if (token == null) {
+            throw new IllegalArgumentException("Token is required");
+        }
+
+        String rawToken = token.startsWith("Bearer ") ? token.substring(7) : token;
+
+        String email = jwtUtilsService.getEmailFromToken(rawToken);
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("Email inválido no token");
+        }
+
+        Optional<UserEntity> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            throw new IllegalArgumentException("User not found");
+        }
+
+        UserEntity user = userOpt.get();
+        String tipo = user.getTipo();
+
+        if (tipo == null || !( "ADM".equals(tipo) || "CRD".equals(tipo) )) {
+            throw new SecurityException("User is not ADM or CRD");
+        }
+
+        return utilsService.convertToDTO(user);
+    }
 }
