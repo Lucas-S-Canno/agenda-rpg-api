@@ -1,0 +1,945 @@
+{
+  "info": {
+    "name": "Agenda RPG Admin API",
+    "description": "Coleção de endpoints da API Agenda RPG Admin",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "🔐 Public - Authentication",
+      "description": "Endpoints públicos de autenticação",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": ["{{base_url}}"],
+              "path": ["login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👤 Public - User Registration",
+      "description": "Endpoints públicos de registro e recuperação de senha",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"joao@example.com\",\n  \"password\": \"password123\",\n  \"nomeCompleto\": \"João Silva\",\n  \"dataDeNascimento\": \"2001-02-01\",\n  \"tipo\": \"JGD\",\n  \"telefone\": \"(11)98765-4321\",\n  \"menor\": \"false\",\n  \"apelido\": \"joao\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/public/user/register",
+              "host": ["{{base_url}}"],
+              "path": ["public", "user", "register"]
+            }
+          }
+        },
+        {
+          "name": "Public User Test",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/public/user/test",
+              "host": ["{{base_url}}"],
+              "path": ["public", "user", "test"]
+            }
+          }
+        },
+        {
+          "name": "Request Password Reset",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/public/user/forgot-password",
+              "host": ["{{base_url}}"],
+              "path": ["public", "user", "forgot-password"]
+            }
+          }
+        },
+        {
+          "name": "Validate Reset Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"code\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/public/user/validate-reset-code",
+              "host": ["{{base_url}}"],
+              "path": ["public", "user", "validate-reset-code"]
+            }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"newPassword\": \"newPassword123\",\n  \"resetToken\": \"token_from_validation\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/public/user/reset-password",
+              "host": ["{{base_url}}"],
+              "path": ["public", "user", "reset-password"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📧 Email Verification",
+      "description": "Endpoints de verificação de email",
+      "item": [
+        {
+          "name": "Verify Email",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/public/email-validation/verify-email?token=token_here",
+              "host": ["{{base_url}}"],
+              "path": ["public", "email-validation", "verify-email"],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "token_here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Resend Verification Link",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/public/email-validation/resend-verification",
+              "host": ["{{base_url}}"],
+              "path": ["public", "email-validation", "resend-verification"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🎭 Public - Events",
+      "description": "Endpoints públicos para listar eventos",
+      "item": [
+        {
+          "name": "Get All Public Events",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/public/event",
+              "host": ["{{base_url}}"],
+              "path": ["public", "event"]
+            }
+          }
+        },
+        {
+          "name": "Get Event by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/public/event/1",
+              "host": ["{{base_url}}"],
+              "path": ["public", "event", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👥 User App - My Profile",
+      "description": "Endpoints da aplicação do usuário para gerenciar perfil",
+      "item": [
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user-app/user/me",
+              "host": ["{{base_url}}"],
+              "path": ["user-app", "user", "me"]
+            }
+          }
+        },
+        {
+          "name": "Get Narrator Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/user-app/user/narrator-name/1",
+              "host": ["{{base_url}}"],
+              "path": ["user-app", "user", "narrator-name", "1"]
+            }
+          }
+        },
+        {
+          "name": "Update My Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"joao@example.com\",\n  \"apelido\": \"joao_updated\",\n  \"telefone\": \"(11)99999-9999\",\n  \"responsavel\": null,\n  \"telefoneResponsavel\": null,\n  \"nomeCompleto\": \"João Silva\",\n  \"dataDeNascimento\": \"2001-02-01\",\n  \"tipo\": \"JGD\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/user-app/user/update-profile/1",
+              "host": ["{{base_url}}"],
+              "path": ["user-app", "user", "update-profile", "1"]
+            }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"senhaAtual\": \"password123\",\n  \"novaSenha\": \"newPassword456\",\n  \"confirmacaoNovaSenha\": \"newPassword456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/user-app/user/change-password",
+              "host": ["{{base_url}}"],
+              "path": ["user-app", "user", "change-password"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🎬 User App - Activities",
+      "description": "Endpoints para gerenciar atividades do usuário",
+      "item": [
+        {
+          "name": "Register for Activity",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/activities/1/register",
+              "host": ["{{base_url}}"],
+              "path": ["activities", "1", "register"]
+            }
+          }
+        },
+        {
+          "name": "Unregister from Activity",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/activities/1/register",
+              "host": ["{{base_url}}"],
+              "path": ["activities", "1", "register"]
+            }
+          }
+        },
+        {
+          "name": "Get My Activity Registrations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user-app/activities/my-registrations",
+              "host": ["{{base_url}}"],
+              "path": ["user-app", "activities", "my-registrations"]
+            }
+          }
+        },
+        {
+          "name": "Get My Created Activities",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user-app/activities/my-creations",
+              "host": ["{{base_url}}"],
+              "path": ["user-app", "activities", "my-creations"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🎯 Admin - Events",
+      "description": "Endpoints administrativos para gerenciar eventos",
+      "item": [
+        {
+          "name": "Get All Events",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/events",
+              "host": ["{{base_url}}"],
+              "path": ["events"]
+            }
+          }
+        },
+        {
+          "name": "Get Event by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/events/1",
+              "host": ["{{base_url}}"],
+              "path": ["events", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create Event",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Novo Evento RPG\",\n  \"local\": \"Local do evento\",\n  \"inicio\": \"2025-12-01T09:00:00\",\n  \"fim\": \"2025-12-02T18:00:00\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/events",
+              "host": ["{{base_url}}"],
+              "path": ["events"]
+            }
+          }
+        },
+        {
+          "name": "Update Event",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Evento Atualizado\",\n  \"local\": \"Novo local\",\n  \"inicio\": \"2025-12-05T09:00:00\",\n  \"fim\": \"2025-12-06T18:00:00\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/events/1",
+              "host": ["{{base_url}}"],
+              "path": ["events", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Event",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/events/1",
+              "host": ["{{base_url}}"],
+              "path": ["events", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📋 Admin - Activities",
+      "description": "Endpoints administrativos para gerenciar atividades",
+      "item": [
+        {
+          "name": "Get Activities by Event",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/events/1/activities",
+              "host": ["{{base_url}}"],
+              "path": ["events", "1", "activities"]
+            }
+          }
+        },
+        {
+          "name": "Create Activity",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"RPG_MESA\",\n  \"nome\": \"Atividade 1\",\n  \"descricao\": \"Descrição da atividade\",\n  \"inicio\": \"2025-12-01T14:00:00\",\n  \"fim\": \"2025-12-01T17:00:00\",\n  \"localComplemento\": \"Sala 1\",\n  \"sistema\": \"D&D 5e\",\n  \"numeroVagas\": 6,\n  \"tags\": [\"fantasia\", \"aventura\"],\n  \"narradorId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/events/1/activities",
+              "host": ["{{base_url}}"],
+              "path": ["events", "1", "activities"]
+            }
+          }
+        },
+        {
+          "name": "Get Activity by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/activities/1",
+              "host": ["{{base_url}}"],
+              "path": ["activities", "1"]
+            }
+          }
+        },
+        {
+          "name": "Update Activity",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"RPG_MESA\",\n  \"nome\": \"Atividade Atualizada\",\n  \"descricao\": \"Descrição atualizada\",\n  \"inicio\": \"2025-12-01T15:00:00\",\n  \"fim\": \"2025-12-01T18:00:00\",\n  \"localComplemento\": \"Sala 2\",\n  \"sistema\": \"D&D 5e\",\n  \"numeroVagas\": 8,\n  \"tags\": [\"fantasia\", \"aventura\"],\n  \"narradorId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/activities/1",
+              "host": ["{{base_url}}"],
+              "path": ["activities", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Activity",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/activities/1",
+              "host": ["{{base_url}}"],
+              "path": ["activities", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏷️ Admin - Tags",
+      "description": "Endpoints administrativos para gerenciar tags",
+      "item": [
+        {
+          "name": "Get All Tags",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tags",
+              "host": ["{{base_url}}"],
+              "path": ["tags"]
+            }
+          }
+        },
+        {
+          "name": "Get Tag by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tags/1",
+              "host": ["{{base_url}}"],
+              "path": ["tags", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create Tag",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tag\": \"RPG\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/tags",
+              "host": ["{{base_url}}"],
+              "path": ["tags"]
+            }
+          }
+        },
+        {
+          "name": "Update Tag",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 1,\n  \"tag\": \"RPG Updated\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/tags",
+              "host": ["{{base_url}}"],
+              "path": ["tags"]
+            }
+          }
+        },
+        {
+          "name": "Delete Tag",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tags/1",
+              "host": ["{{base_url}}"],
+              "path": ["tags", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👨‍💼 Admin - Users",
+      "description": "Endpoints administrativos para gerenciar usuários",
+      "item": [
+        {
+          "name": "Validate Admin User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user/validate-admin",
+              "host": ["{{base_url}}"],
+              "path": ["user", "validate-admin"]
+            }
+          }
+        },
+        {
+          "name": "Search Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user/search?page=0&size=10&tipos=ADM,CRD&menor=N&sort=nomeCompleto&dir=asc",
+              "host": ["{{base_url}}"],
+              "path": ["user", "search"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                },
+                {
+                  "key": "tipos",
+                  "value": "ADM,CRD",
+                  "disabled": true
+                },
+                {
+                  "key": "menor",
+                  "value": "N",
+                  "disabled": true
+                },
+                {
+                  "key": "sort",
+                  "value": "nomeCompleto"
+                },
+                {
+                  "key": "dir",
+                  "value": "asc"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user",
+              "host": ["{{base_url}}"],
+              "path": ["user"]
+            }
+          }
+        },
+        {
+          "name": "Create User (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"novouser@example.com\",\n  \"password\": \"password123\",\n  \"nomeCompleto\": \"Novo Usuário Admin\",\n  \"dataDeNascimento\": \"2000-01-01\",\n  \"tipo\": \"ADM\",\n  \"telefone\": \"(11)12345-6789\",\n  \"menor\": \"false\",\n  \"apelido\": \"novo_user\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/user",
+              "host": ["{{base_url}}"],
+              "path": ["user"]
+            }
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@email.com\",\n  \"password\": \"Senha@123\",\n  \"nomeCompleto\": \"Usuário Atualizado\",\n  \"dataDeNascimento\": \"2001-02-01\",\n  \"tipo\": \"CRD\",\n  \"telefone\": \"(11)12345-6789\",\n  \"menor\": \"false\",\n  \"apelido\": \"usuario_atualizado\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/user/1",
+              "host": ["{{base_url}}"],
+              "path": ["user", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user/1",
+              "host": ["{{base_url}}"],
+              "path": ["user", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🚫 Discontinued Endpoints",
+      "description": "Endpoints descontinuados (HTTP 410 Gone)",
+      "item": [
+        {
+          "name": "Get My Events (DEPRECATED)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user-app/event/my-events",
+              "host": ["{{base_url}}"],
+              "path": ["user-app", "event", "my-events"]
+            }
+          }
+        },
+        {
+          "name": "Get Registered Events (DEPRECATED)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user-app/event/registered-events",
+              "host": ["{{base_url}}"],
+              "path": ["user-app", "event", "registered-events"]
+            }
+          }
+        },
+        {
+          "name": "Create Event (DEPRECATED)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user-app/event",
+              "host": ["{{base_url}}"],
+              "path": ["user-app", "event"]
+            }
+          }
+        },
+        {
+          "name": "Update Event (DEPRECATED)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user-app/event/1",
+              "host": ["{{base_url}}"],
+              "path": ["user-app", "event", "1"]
+            }
+          }
+        },
+        {
+          "name": "Register for Event (DEPRECATED)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user-app/event/1/register",
+              "host": ["{{base_url}}"],
+              "path": ["user-app", "event", "1", "register"]
+            }
+          }
+        },
+        {
+          "name": "Unregister from Event (DEPRECATED)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/user-app/event/1/unregister",
+              "host": ["{{base_url}}"],
+              "path": ["user-app", "event", "1", "unregister"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080/api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "admin_token",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
+
