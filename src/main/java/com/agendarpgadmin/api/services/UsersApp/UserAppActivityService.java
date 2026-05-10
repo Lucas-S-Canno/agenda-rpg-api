@@ -6,8 +6,10 @@ import com.agendarpgadmin.api.entities.ActivityParticipantEntity;
 import com.agendarpgadmin.api.entities.enums.ActivityType;
 import com.agendarpgadmin.api.repositories.ActivityParticipantRepository;
 import com.agendarpgadmin.api.repositories.ActivityRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -16,7 +18,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
+@Transactional(readOnly = true)
 public class UserAppActivityService {
 
     @Autowired
@@ -25,18 +29,24 @@ public class UserAppActivityService {
     @Autowired
     private ActivityParticipantRepository activityParticipantRepository;
 
+    @Transactional
     public ActivityDTO register(Long activityId, Long userId) {
+        log.info("Register request received. activityId={}, userId={}", activityId, userId);
+
         ActivityEntity activity = activityRepository.findById(activityId)
                 .orElseThrow(() -> new IllegalArgumentException("Atividade não encontrada"));
 
         if (activityParticipantRepository.existsByAtividadeIdAndUsuarioId(activityId, userId)) {
+            log.warn("User already registered. activityId={}, userId={}", activityId, userId);
             throw new IllegalStateException("Usuário já inscrito na atividade");
         }
 
         if (activity.getTipo() == ActivityType.RPG_MESA) {
             long currentCount = activityParticipantRepository.countByAtividadeId(activityId);
             int vagas = activity.getNumeroVagas() == null ? 0 : activity.getNumeroVagas();
+            log.info("Capacity check. activityId={}, currentCount={}, vagas={}", activityId, currentCount, vagas);
             if (currentCount >= vagas) {
+                log.warn("Activity full. activityId={}, userId={}", activityId, userId);
                 throw new IllegalStateException("Atividade lotada");
             }
         }
@@ -46,16 +56,22 @@ public class UserAppActivityService {
         participant.setUsuarioId(userId);
         participant.setCreatedAt(LocalDateTime.now());
         activityParticipantRepository.save(participant);
+        log.info("Registration saved. activityId={}, userId={}, participantId={}", activityId, userId, participant.getId());
 
         return convertToDTO(activity);
     }
 
+    @Transactional
     public ActivityDTO unregister(Long activityId, Long userId) {
+        log.info("Unregister request received. activityId={}, userId={}", activityId, userId);
+
         if (!activityParticipantRepository.existsByAtividadeIdAndUsuarioId(activityId, userId)) {
+            log.warn("User not registered for activity. activityId={}, userId={}", activityId, userId);
             throw new IllegalArgumentException("Usuário não está inscrito na atividade");
         }
 
         activityParticipantRepository.deleteByAtividadeIdAndUsuarioId(activityId, userId);
+        log.info("Registration removed. activityId={}, userId={}", activityId, userId);
 
         ActivityEntity activity = activityRepository.findById(activityId)
                 .orElseThrow(() -> new IllegalArgumentException("Atividade não encontrada"));
@@ -63,6 +79,7 @@ public class UserAppActivityService {
     }
 
     public List<ActivityDTO> getMyRegistrations(Long userId) {
+        log.info("Fetching registrations for userId={}", userId);
         List<ActivityParticipantEntity> registrations = activityParticipantRepository.findByUsuarioId(userId);
 
         Map<Long, ActivityDTO> byId = new LinkedHashMap<>();
@@ -75,6 +92,7 @@ public class UserAppActivityService {
     }
 
     public List<ActivityDTO> getMyCreations(Long userId) {
+        log.info("Fetching creations for userId={}", userId);
         Map<Long, ActivityDTO> byId = new LinkedHashMap<>();
 
         activityRepository.findByNarradorId(userId).forEach(a -> byId.put(a.getId(), convertToDTO(a)));
@@ -84,6 +102,7 @@ public class UserAppActivityService {
     }
 
     private ActivityDTO convertToDTO(ActivityEntity entity) {
+        log.debug("Converting activity to DTO. activityId={}", entity.getId());
         List<String> tags = new ArrayList<>();
         if (entity.getTags() != null && !entity.getTags().isBlank()) {
             tags = Arrays.stream(entity.getTags().split(","))

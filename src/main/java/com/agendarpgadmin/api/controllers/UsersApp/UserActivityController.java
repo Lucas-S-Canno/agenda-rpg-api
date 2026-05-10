@@ -4,6 +4,7 @@ import com.agendarpgadmin.api.dtos.ActivityDTO;
 import com.agendarpgadmin.api.dtos.ResponseDTO;
 import com.agendarpgadmin.api.services.UsersApp.UserAppActivityService;
 import com.agendarpgadmin.api.services.Utils.AuthorizationService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 public class UserActivityController {
 
@@ -26,8 +28,10 @@ public class UserActivityController {
             @RequestHeader("Authorization") String authorizationHeader
     ) {
         try {
+            log.info("Register endpoint called. activityId={}", id);
             authorizationService.ensureAnyAuthenticated(authorizationHeader);
             Long userId = authorizationService.getAuthenticatedUserId(authorizationHeader);
+            log.info("Authenticated user for register. activityId={}, userId={}", id, userId);
             ActivityDTO activity = userAppActivityService.register(id, userId);
             return ResponseEntity.ok(new ResponseDTO<>(
                     HttpStatus.OK.value(),
@@ -35,12 +39,15 @@ public class UserActivityController {
                     activity
             ));
         } catch (IllegalArgumentException e) {
+            log.warn("Register validation error. activityId={}, message={}", id, e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ResponseDTO<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null));
         } catch (IllegalStateException e) {
+            log.warn("Register state conflict. activityId={}, message={}", id, e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(new ResponseDTO<>(HttpStatus.CONFLICT.value(), e.getMessage(), null));
         } catch (Exception e) {
+            log.error("Unexpected error while registering user in activity. activityId={}", id, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ResponseDTO<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Erro interno do servidor", null));
         }
@@ -52,8 +59,10 @@ public class UserActivityController {
             @RequestHeader("Authorization") String authorizationHeader
     ) {
         try {
+            log.info("Unregister endpoint called. activityId={}", id);
             authorizationService.ensureAnyAuthenticated(authorizationHeader);
             Long userId = authorizationService.getAuthenticatedUserId(authorizationHeader);
+            log.info("Authenticated user for unregister. activityId={}, userId={}", id, userId);
             ActivityDTO activity = userAppActivityService.unregister(id, userId);
             return ResponseEntity.ok(new ResponseDTO<>(
                     HttpStatus.OK.value(),
@@ -61,9 +70,11 @@ public class UserActivityController {
                     activity
             ));
         } catch (IllegalArgumentException e) {
+            log.warn("Unregister validation error. activityId={}, message={}", id, e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ResponseDTO<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null));
         } catch (Exception e) {
+            log.error("Unexpected error while unregistering user from activity. activityId={}", id, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ResponseDTO<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Erro interno do servidor", null));
         }

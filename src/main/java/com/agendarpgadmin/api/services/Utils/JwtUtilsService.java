@@ -34,7 +34,17 @@ public class JwtUtilsService {
                 .setSigningKey(SECRET_KEY)
                 .parseClaimsJws(token)
                 .getBody();
-        return claims.get("id", Integer.class).toString();
+        Object userId = claims.get("id");
+
+        if (userId instanceof Number number) {
+            return String.valueOf(number.longValue());
+        }
+
+        if (userId instanceof String idAsString && !idAsString.isBlank()) {
+            return idAsString;
+        }
+
+        throw new IllegalArgumentException("Token sem claim de id valida");
     }
 
     public String getEmailFromToken(String token) {
