@@ -1,14 +1,18 @@
 package com.agendarpgadmin.api.services.AdminApp;
 
+import com.agendarpgadmin.api.dtos.ActivityDTO;
 import com.agendarpgadmin.api.dtos.EventDTO;
 import com.agendarpgadmin.api.dtos.ResponseDTO;
+import com.agendarpgadmin.api.entities.ActivityEntity;
 import com.agendarpgadmin.api.entities.EventEntity;
+import com.agendarpgadmin.api.repositories.ActivityRepository;
 import com.agendarpgadmin.api.repositories.EventRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -19,9 +23,11 @@ public class EventService {
     @Autowired
     private EventRepository eventoRepository;
 
+    @Autowired
+    private ActivityRepository activityRepository;
+
     public List<EventDTO> findAll() {
-        // Admin: todos eventos, do mais novo para o mais antigo
-        return eventoRepository.findAllByOrderByDataDesc().stream()
+        return eventoRepository.findAllByOrderByInicioDesc().stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
@@ -32,6 +38,7 @@ public class EventService {
     }
 
     public EventDTO create(EventDTO eventDTO) {
+        validateEvent(eventDTO);
         EventEntity eventoEntity = convertToEntity(eventDTO);
         eventoEntity = eventoRepository.save(eventoEntity);
         return convertToDTO(eventoEntity);
@@ -42,38 +49,29 @@ public class EventService {
     }
 
     private EventDTO convertToDTO(EventEntity eventoEntity) {
-        List<String> jogadores = Arrays.stream(eventoEntity.getJogadores().split(","))
-            .filter(j -> j != null && !j.trim().isEmpty())
-            .collect(Collectors.toList());
+        List<ActivityDTO> atividades = activityRepository.findByEventoId(eventoEntity.getId()).stream()
+                .map(this::convertActivityToDTO)
+                .collect(Collectors.toList());
+
         return new EventDTO(
                 eventoEntity.getId(),
-                eventoEntity.getTitulo(),
-                eventoEntity.getSistema(),
-                eventoEntity.getHorario(),
-                eventoEntity.getNumeroDeVagas(),
-                eventoEntity.getNarrador(),
-                eventoEntity.getData(),
+                eventoEntity.getNome(),
                 eventoEntity.getLocal(),
-                Arrays.asList(eventoEntity.getTags().split(",")),
-                eventoEntity.getDescricao(),
-                jogadores
-                );
+                eventoEntity.getInicio(),
+                eventoEntity.getFim(),
+                atividades
+        );
     }
 
     private EventEntity convertToEntity(EventDTO eventDTO) {
         return new EventEntity(
                 eventDTO.getId(),
-                eventDTO.getTitulo(),
-                eventDTO.getSistema(),
-                eventDTO.getHorario(),
-                eventDTO.getNumeroDeVagas(),
-                eventDTO.getNarrador(),
-                eventDTO.getData(),
+                eventDTO.getNome(),
                 eventDTO.getLocal(),
-                String.join(",", eventDTO.getTags()),
-                eventDTO.getDescricao(),
-                String.join(",", eventDTO.getJogadores())
-                );
+                eventDTO.getInicio(),
+                eventDTO.getFim(),
+                new ArrayList<>()
+        );
     }
 
     public ResponseDTO<List<EventDTO>> getAllEventsListResponseDTO(List<EventDTO> events) {
@@ -113,6 +111,7 @@ public class EventService {
     }
 
     public EventDTO update(Long id, EventDTO eventDTO) {
+        validateEvent(eventDTO);
         EventEntity eventoEntity = convertToEntity(eventDTO);
         eventoEntity.setId(id);
         eventoEntity = eventoRepository.save(eventoEntity);
@@ -120,10 +119,50 @@ public class EventService {
     }
 
     public List<EventDTO> getUpcomingEvents() {
-        String today = java.time.LocalDate.now().toString();
-        return eventoRepository.findByDataGreaterThanEqualOrderByDataAsc(today)
+        LocalDateTime now = LocalDateTime.now();
+        return eventoRepository.findByInicioGreaterThanEqualOrderByInicioAsc(now)
                 .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
+    }
+
+    private void validateEvent(EventDTO dto) {
+        if (dto.getNome() == null || dto.getNome().isBlank()) {
+            throw new IllegalArgumentException("Nome do evento é obrigatório");
+        }
+        if (dto.getLocal() == null || dto.getLocal().isBlank()) {
+            throw new IllegalArgumentException("Local do evento é obrigatório");
+        }
+        if (dto.getInicio() == null || dto.getFim() == null) {
+            throw new IllegalArgumentException("Início e fim do evento são obrigatórios");
+        }
+        if (!dto.getFim().isAfter(dto.getInicio())) {
+            throw new IllegalArgumentException("Fim do evento deve ser maior que início");
+        }
+    }
+
+    private ActivityDTO convertActivityToDTO(ActivityEntity entity) {
+        List<String> tags = new ArrayList<>();
+        if (entity.getTags() != null && !entity.getTags().isBlank()) {
+            tags = List.of(entity.getTags().split(","));
+        }
+
+        return new ActivityDTO(
+                entity.getId(),
+                entity.getEvento().getId(),
+                entity.getTipo(),
+                entity.getNome(),
+                entity.getDescricao(),
+                entity.getInicio(),
+                entity.getFim(),
+                entity.getLocalComplemento(),
+                entity.getSistema(),
+                entity.getNumeroVagas(),
+                new ArrayList<>(tags),
+                entity.getNarradorId(),
+                entity.getTema(),
+                entity.getPalestranteId(),
+                new ArrayList<>()
+        );
     }
 }

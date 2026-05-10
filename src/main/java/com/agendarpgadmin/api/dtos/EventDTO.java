@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,15 +15,10 @@ import java.util.List;
 @AllArgsConstructor
 public class EventDTO {
     private Long id;
-    private String titulo;
-    private String sistema;
-    private String horario;
-    private int numeroDeVagas;
-    private String narrador;
-    private String data;
+    private String nome;
     private String local;
-    private List<String> tags = new ArrayList<>();
-    private String descricao;
-    private List<String> jogadores = new ArrayList<>();
+    private LocalDateTime inicio;
+    private LocalDateTime fim;
+    private List<ActivityDTO> atividades = new ArrayList<>();
 
 }
