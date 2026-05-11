@@ -69,6 +69,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return true;
         }
 
+        if (path.equals("/api/events/my-created")) {
+            return false;
+        }
+
         return "GET".equalsIgnoreCase(method)
                 && (
                 path.equals("/api/events")

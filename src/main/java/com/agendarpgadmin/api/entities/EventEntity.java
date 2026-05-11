@@ -32,6 +32,9 @@ public class EventEntity {
     @Column(name = "fim", nullable = false)
     private LocalDateTime fim;
 
+    @Column(name = "creator_user_id")
+    private Long creatorUserId;
+
     @OneToMany(mappedBy = "evento", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ActivityEntity> atividades;
 }

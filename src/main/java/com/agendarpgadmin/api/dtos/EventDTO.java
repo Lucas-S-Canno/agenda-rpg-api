@@ -19,6 +19,7 @@ public class EventDTO {
     private String local;
     private LocalDateTime inicio;
     private LocalDateTime fim;
+    private Long creatorUserId;
     private List<ActivityDTO> atividades = new ArrayList<>();
 
 }

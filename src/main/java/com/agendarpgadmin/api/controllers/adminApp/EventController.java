@@ -59,7 +59,8 @@ public class EventController {
     ) {
         try {
             authorizationService.ensureEventManagementAccess(authorizationHeader);
-            EventDTO createdEvent = eventService.create(eventDTO);
+            Long creatorUserId = authorizationService.getAuthenticatedUserId(authorizationHeader);
+            EventDTO createdEvent = eventService.create(eventDTO, creatorUserId);
             ResponseDTO<EventDTO> response = new ResponseDTO<>(
                     HttpStatus.CREATED.value(),
                     HttpStatus.CREATED.getReasonPhrase(),
@@ -87,6 +88,37 @@ public class EventController {
                     null
             );
             return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    @GetMapping("/my-created")
+    public ResponseEntity<ResponseDTO<List<EventDTO>>> getMyCreatedEvents(
+            @RequestHeader("Authorization") String authorizationHeader
+    ) {
+        try {
+            authorizationService.ensureAnyAuthenticated(authorizationHeader);
+            Long userId = authorizationService.getAuthenticatedUserId(authorizationHeader);
+            List<EventDTO> events = eventService.findByCreatorUserId(userId);
+            ResponseDTO<List<EventDTO>> response = new ResponseDTO<>(
+                    HttpStatus.OK.value(),
+                    HttpStatus.OK.getReasonPhrase(),
+                    events
+            );
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            ResponseDTO<List<EventDTO>> response = new ResponseDTO<>(
+                    HttpStatus.UNAUTHORIZED.value(),
+                    e.getMessage(),
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        } catch (Exception e) {
+            ResponseDTO<List<EventDTO>> response = new ResponseDTO<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 

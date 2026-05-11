@@ -37,9 +37,10 @@ public class EventService {
         return evento.map(this::convertToDTO).orElse(null);
     }
 
-    public EventDTO create(EventDTO eventDTO) {
+    public EventDTO create(EventDTO eventDTO, Long creatorUserId) {
         validateEvent(eventDTO);
         EventEntity eventoEntity = convertToEntity(eventDTO);
+        eventoEntity.setCreatorUserId(creatorUserId);
         eventoEntity = eventoRepository.save(eventoEntity);
         return convertToDTO(eventoEntity);
     }
@@ -59,6 +60,7 @@ public class EventService {
                 eventoEntity.getLocal(),
                 eventoEntity.getInicio(),
                 eventoEntity.getFim(),
+                eventoEntity.getCreatorUserId(),
                 atividades
         );
     }
@@ -70,6 +72,7 @@ public class EventService {
                 eventDTO.getLocal(),
                 eventDTO.getInicio(),
                 eventDTO.getFim(),
+                eventDTO.getCreatorUserId(),
                 new ArrayList<>()
         );
     }
@@ -114,8 +117,18 @@ public class EventService {
         validateEvent(eventDTO);
         EventEntity eventoEntity = convertToEntity(eventDTO);
         eventoEntity.setId(id);
+        EventEntity existingEvent = eventoRepository.findById(id).orElse(null);
+        if (existingEvent != null) {
+            eventoEntity.setCreatorUserId(existingEvent.getCreatorUserId());
+        }
         eventoEntity = eventoRepository.save(eventoEntity);
         return convertToDTO(eventoEntity);
+    }
+
+    public List<EventDTO> findByCreatorUserId(Long creatorUserId) {
+        return eventoRepository.findByCreatorUserIdOrderByInicioDesc(creatorUserId).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     public List<EventDTO> getUpcomingEvents() {
