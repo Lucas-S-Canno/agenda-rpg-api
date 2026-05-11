@@ -5,6 +5,8 @@ import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
+
 @Service
 public class JwtUtilsService {
 
@@ -32,7 +34,17 @@ public class JwtUtilsService {
                 .setSigningKey(SECRET_KEY)
                 .parseClaimsJws(token)
                 .getBody();
-        return claims.get("id", Integer.class).toString();
+        Object userId = claims.get("id");
+
+        if (userId instanceof Number number) {
+            return String.valueOf(number.longValue());
+        }
+
+        if (userId instanceof String idAsString && !idAsString.isBlank()) {
+            return idAsString;
+        }
+
+        throw new IllegalArgumentException("Token sem claim de id valida");
     }
 
     public String getEmailFromToken(String token) {
@@ -42,5 +54,18 @@ public class JwtUtilsService {
                 .getBody();
         Object email = claims.get("sub");
         return email == null ? null : email.toString();
+    }
+
+    public String getUserTypeFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(SECRET_KEY)
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.get("tipo", String.class);
+    }
+
+    public boolean isUserOneOfTypes(String token, Set<String> allowedTypes) {
+        String userType = getUserTypeFromToken(token);
+        return userType != null && allowedTypes.contains(userType);
     }
 }

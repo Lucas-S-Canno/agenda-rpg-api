@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -20,33 +20,21 @@ public class EventEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "titulo", nullable = false)
-    private String titulo;
-
-    @Column(name = "sistema", nullable = false)
-    private String sistema;
-
-    @Column(name = "horario", nullable = false)
-    private String horario;
-
-    @Column(name = "numero_de_vagas", nullable = false)
-    private int numeroDeVagas;
-
-    @Column(name = "narrador", nullable = false)
-    private String narrador;
-
-    @Column(name = "data", nullable = false)
-    private String data;
+    @Column(name = "nome", nullable = false)
+    private String nome;
 
     @Column(name = "local", nullable = false)
     private String local;
 
-    @Column(name = "tags")
-    private String tags;
+    @Column(name = "inicio", nullable = false)
+    private LocalDateTime inicio;
 
-    @Column(name = "descricao", nullable = false)
-    private String descricao;
+    @Column(name = "fim", nullable = false)
+    private LocalDateTime fim;
 
-    @Column(name = "jogadores")
-    private String jogadores;
+    @Column(name = "creator_user_id")
+    private Long creatorUserId;
+
+    @OneToMany(mappedBy = "evento", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ActivityEntity> atividades;
 }
