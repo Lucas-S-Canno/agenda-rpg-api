@@ -1,4 +1,5 @@
 package com.agendarpgadmin.api.dtos;
+import java.util.UUID;
 
 import com.agendarpgadmin.api.entities.enums.ActivityType;
 import lombok.AllArgsConstructor;
@@ -15,8 +16,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ActivityDTO {
-    private Long id;
-    private Long eventoId;
+    private UUID id;
+    private UUID eventoId;
     private ActivityType tipo;
     private String nome;
     private String descricao;
@@ -28,12 +29,12 @@ public class ActivityDTO {
     private String sistema;
     private Integer numeroVagas;
     private List<String> tags = new ArrayList<>();
-    private Long narradorId;
+    private UUID narradorId;
 
     // Workshop
     private String tema;
-    private Long palestranteId;
+    private UUID palestranteId;
 
-    private List<Long> participantes = new ArrayList<>();
+    private List<UUID> participantes = new ArrayList<>();
 }
 

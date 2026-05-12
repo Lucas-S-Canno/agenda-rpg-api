@@ -3,6 +3,14 @@ plugins {
   // Atualizado para 3.5.14 para melhor sinergia com Java 25
   id 'org.springframework.boot' version '3.5.14'
   id 'io.spring.dependency-management' version '1.1.7'
+  id 'org.flywaydb.flyway' version '11.1.0'
+}
+
+flyway {
+  url = System.getenv('FLYWAY_URL')
+  user = System.getenv('FLYWAY_USER')
+  password = System.getenv('FLYWAY_PASSWORD')
+  baselineOnMigrate = true
 }
 
 group = 'com.agendarpgadmin'
@@ -52,6 +60,9 @@ dependencies {
   compileOnly 'org.projectlombok:lombok:1.18.46'
   annotationProcessor 'org.projectlombok:lombok:1.18.46'
   
+  // UUID v7 Generator (Standard for Java 25)
+  implementation 'com.github.f4b6a3:uuid-creator:6.0.0'
+
   // Lombok para os Testes (Importante para evitar erros de inicialização)
   testCompileOnly 'org.projectlombok:lombok:1.18.46'
   testAnnotationProcessor 'org.projectlombok:lombok:1.18.46'

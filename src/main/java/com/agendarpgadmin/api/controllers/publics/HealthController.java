@@ -1,4 +1,5 @@
 package com.agendarpgadmin.api.controllers.publics;
+import java.util.UUID;
 
 import com.agendarpgadmin.api.dtos.ResponseDTO;
 import org.springframework.http.HttpStatus;

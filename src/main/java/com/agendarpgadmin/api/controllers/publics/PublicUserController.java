@@ -1,8 +1,9 @@
 package com.agendarpgadmin.api.controllers.publics;
+import java.util.UUID;
 
 import com.agendarpgadmin.api.dtos.*;
-import com.agendarpgadmin.api.services.Public.PublicPasswordResetService;
-import com.agendarpgadmin.api.services.Public.PublicUserService;
+import com.agendarpgadmin.api.services.publics.PublicPasswordResetService;
+import com.agendarpgadmin.api.services.publics.PublicUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

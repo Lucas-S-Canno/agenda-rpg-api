@@ -1,7 +1,7 @@
 -- Activities happen inside events
 CREATE TABLE IF NOT EXISTS atividades (
-    id BIGSERIAL PRIMARY KEY,
-    evento_id BIGINT NOT NULL,
+    id UUID PRIMARY KEY,
+    evento_id UUID NOT NULL,
     tipo VARCHAR(20) NOT NULL,
     nome VARCHAR(255) NOT NULL,
     descricao TEXT NOT NULL,
@@ -11,9 +11,8 @@ CREATE TABLE IF NOT EXISTS atividades (
     sistema VARCHAR(255),
     numero_vagas INTEGER,
     tags TEXT,
-    narrador_id BIGINT,
+    narrador_id UUID,
     tema VARCHAR(255),
-    palestrante_id BIGINT,
+    palestrante_id UUID,
     CONSTRAINT fk_atividades_evento FOREIGN KEY (evento_id) REFERENCES eventos(id) ON DELETE CASCADE
 );
-
