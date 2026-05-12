@@ -5,6 +5,7 @@ import com.agendarpgadmin.api.dtos.ResponseDTO;
 import com.agendarpgadmin.api.dtos.UserDTO;
 import com.agendarpgadmin.api.entities.UserEntity;
 import com.agendarpgadmin.api.repositories.UserRepository;
+import com.agendarpgadmin.api.services.utils.PasswordHashingService;
 import com.agendarpgadmin.api.services.utils.UtilsService;
 import com.agendarpgadmin.api.services.utils.JwtUtilsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,9 @@ public class UserService {
 
     @Autowired
     private JwtUtilsService jwtUtilsService;
+
+    @Autowired
+    private PasswordHashingService passwordHashingService;
 
     public Page<UserDTO> searchUsers(
             int page,
@@ -93,6 +97,7 @@ public class UserService {
 
     public UserDTO createUser(UserDTO userDTO) {
         UserEntity userEntity = utilsService.convertToEntity(userDTO);
+        userEntity.setPassword(passwordHashingService.hashPassword(userEntity.getPassword()));
         userEntity = userRepository.save(userEntity);
         return utilsService.convertToDTO(userEntity);
     }
@@ -122,6 +127,14 @@ public class UserService {
     public UserDTO update(UUID id, UserDTO user) {
         UserEntity userEntity = utilsService.convertToEntity(user);
         userEntity.setId(id);
+        
+        Optional<UserEntity> existingUser = userRepository.findById(id);
+        if (userEntity.getPassword() != null && !userEntity.getPassword().trim().isEmpty()) {
+            userEntity.setPassword(passwordHashingService.hashPassword(userEntity.getPassword()));
+        } else if (existingUser.isPresent()) {
+            userEntity.setPassword(existingUser.get().getPassword());
+        }
+
         userEntity = userRepository.save(userEntity);
         return utilsService.convertToDTO(userEntity);
     }

@@ -5,10 +5,10 @@ import com.agendarpgadmin.api.entities.PasswordResetCodeEntity;
 import com.agendarpgadmin.api.repositories.PasswordResetCodeRepository;
 import com.agendarpgadmin.api.repositories.UserRepository;
 import com.agendarpgadmin.api.services.utils.EmailService;
+import com.agendarpgadmin.api.services.utils.PasswordHashingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Service
 public class PublicPasswordResetService {
@@ -21,6 +21,9 @@ public class PublicPasswordResetService {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private PasswordHashingService passwordHashingService;
 
     public void requestResetCode(String email) {
         var userOpt = userRepository.findByEmail(email);
@@ -63,8 +66,10 @@ public class PublicPasswordResetService {
             var userOpt = userRepository.findByEmail(email);
             if (userOpt.isPresent()) {
                 var user = userOpt.get();
-                user.setPassword(newPassword); // idealmente, faça hash da senha
+                // Fazer hash seguro da nova senha antes de salvar
+                user.setPassword(passwordHashingService.hashPassword(newPassword));
                 userRepository.save(user);
+                
                 var entity = entityOpt.get();
                 entity.setUsed(true);
                 codeRepository.save(entity);
@@ -75,5 +80,4 @@ public class PublicPasswordResetService {
             throw new RuntimeException("Token inválido ou expirado");
         }
     }
-
 }

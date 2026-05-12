@@ -4,6 +4,7 @@ import java.util.UUID;
 import com.agendarpgadmin.api.dtos.UserDTO;
 import com.agendarpgadmin.api.entities.UserEntity;
 import com.agendarpgadmin.api.repositories.UserRepository;
+import com.agendarpgadmin.api.services.utils.PasswordHashingService;
 import com.agendarpgadmin.api.services.utils.UtilsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,9 @@ public class PublicUserService {
     @Autowired
     private EmailVerificationService emailVerificationService;
 
+    @Autowired
+    private PasswordHashingService passwordHashingService;
+
     @Transactional
     public UserDTO createUser(UserDTO userDTO) {
         // Validar dados obrigatórios antes de criar o usuário
@@ -37,6 +41,10 @@ public class PublicUserService {
 
         UserEntity userEntity = utilsService.convertToEntity(userDTO);
         userEntity.setEmailVerified(false); // Garantir que começa como não verificado
+        
+        // Fazer o hash da senha usando Argon2id antes de salvar
+        userEntity.setPassword(passwordHashingService.hashPassword(userEntity.getPassword()));
+
         userEntity = userRepository.save(userEntity);
 
         // Criar e enviar token de verificação

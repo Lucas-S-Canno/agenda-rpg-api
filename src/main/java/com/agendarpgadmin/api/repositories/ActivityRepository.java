@@ -7,8 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface ActivityRepository extends JpaRepository<ActivityEntity, UUID> {
-    List<ActivityEntity> findByEventoId(Long eventoId);
-    List<ActivityEntity> findByNarradorId(Long narradorId);
-    List<ActivityEntity> findByPalestranteId(Long palestranteId);
+    List<ActivityEntity> findByEventoId(UUID eventoId);
+    List<ActivityEntity> findByNarradorId(UUID narradorId);
+    List<ActivityEntity> findByPalestranteId(UUID palestranteId);
 }
 

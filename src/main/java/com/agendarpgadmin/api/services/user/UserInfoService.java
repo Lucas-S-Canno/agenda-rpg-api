@@ -8,6 +8,7 @@ import com.agendarpgadmin.api.dtos.UserDTO;
 import com.agendarpgadmin.api.entities.UserEntity;
 import com.agendarpgadmin.api.filters.JwtAuthenticationFilter;
 import com.agendarpgadmin.api.repositories.UserRepository;
+import com.agendarpgadmin.api.services.utils.PasswordHashingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -23,6 +24,8 @@ public class UserInfoService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PasswordHashingService passwordHashingService;
 
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll().stream().map(this::convertToDTO).collect(Collectors.toList());
@@ -39,6 +42,7 @@ public class UserInfoService {
 
     public UserDTO createUser(UserDTO userDTO) {
         UserEntity userEntity = convertToEntity(userDTO);
+        userEntity.setPassword(passwordHashingService.hashPassword(userEntity.getPassword()));
         userEntity = userRepository.save(userEntity);
         return convertToDTO(userEntity);
     }
@@ -68,6 +72,15 @@ public class UserInfoService {
     public UserDTO update(UUID id, UserDTO user) {
         UserEntity userEntity = convertToEntity(user);
         userEntity.setId(id);
+        
+        // Se a senha foi enviada na atualização, fazemos o hash, caso contrário, mantemos a antiga
+        Optional<UserEntity> existingUser = userRepository.findById(id);
+        if (userEntity.getPassword() != null && !userEntity.getPassword().trim().isEmpty()) {
+            userEntity.setPassword(passwordHashingService.hashPassword(userEntity.getPassword()));
+        } else if (existingUser.isPresent()) {
+            userEntity.setPassword(existingUser.get().getPassword());
+        }
+
         userEntity = userRepository.save(userEntity);
         return convertToDTO(userEntity);
     }
@@ -231,7 +244,7 @@ public class UserInfoService {
         }
 
         // Validar senha atual
-        if (!user.getPassword().equals(changePasswordDTO.getSenhaAtual())) {
+        if (!passwordHashingService.verifyPassword(changePasswordDTO.getSenhaAtual(), user.getPassword())) {
             throw new RuntimeException("Senha atual incorreta");
         }
 
@@ -245,8 +258,8 @@ public class UserInfoService {
             throw new RuntimeException("Nova senha não pode ser vazia");
         }
 
-        // Atualizar a senha
-        user.setPassword(changePasswordDTO.getNovaSenha());
+        // Atualizar a senha com o hash seguro
+        user.setPassword(passwordHashingService.hashPassword(changePasswordDTO.getNovaSenha()));
         user = userRepository.save(user);
 
         return convertToDTO(user);

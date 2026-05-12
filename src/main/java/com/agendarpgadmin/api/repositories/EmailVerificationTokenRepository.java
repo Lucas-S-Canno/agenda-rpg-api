@@ -18,14 +18,14 @@ public interface EmailVerificationTokenRepository extends JpaRepository<EmailVer
 
     @Modifying
     @Query("DELETE FROM EmailVerificationToken e WHERE e.userId = :userId AND e.consumedAt IS NULL")
-    int deleteUnconsumedByUserId(@Param("userId") Long userId);
+    int deleteUnconsumedByUserId(@Param("userId") UUID userId);
 
     @Modifying
     @Query("DELETE FROM EmailVerificationToken e WHERE e.expiresAt < :now")
     int deleteExpiredTokens(@Param("now") LocalDateTime now);
 
     @Query("SELECT COUNT(e) FROM EmailVerificationToken e WHERE e.userId = :userId AND e.createdAt >= :startOfDay")
-    int countTodayResendsByUserId(@Param("userId") Long userId, @Param("startOfDay") LocalDateTime startOfDay);
+    int countTodayResendsByUserId(@Param("userId") UUID userId, @Param("startOfDay") LocalDateTime startOfDay);
 
-    Optional<EmailVerificationToken> findByUserIdAndConsumedAtIsNull(Long userId);
+    Optional<EmailVerificationToken> findByUserIdAndConsumedAtIsNull(UUID userId);
 }

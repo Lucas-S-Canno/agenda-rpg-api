@@ -11,5 +11,5 @@ import java.util.List;
 public interface EventRepository extends JpaRepository<EventEntity, UUID>, JpaSpecificationExecutor<EventEntity> {
     List<EventEntity> findByInicioGreaterThanEqualOrderByInicioAsc(LocalDateTime inicio);
     List<EventEntity> findAllByOrderByInicioDesc();
-    List<EventEntity> findByCreatorUserIdOrderByInicioDesc(Long creatorUserId);
+    List<EventEntity> findByCreatorUserIdOrderByInicioDesc(UUID creatorUserId);
 }
