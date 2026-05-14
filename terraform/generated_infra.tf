@@ -81,6 +81,24 @@ resource "render_web_service" "api" {
     OTEL_SERVICE_NAME = {
       value = var.render_otel_service_name
     }
+    JWT_SECRET = {
+      value = var.render_jwt_secret_key
+    }
+    SPRING_MAIL_HOST = {
+      value = var.render_mail_host
+    }
+    SPRING_MAIL_PORT = {
+      value = var.render_mail_port
+    }
+    SPRING_MAIL_USERNAME = {
+      value = var.render_mail_username
+    }
+    SPRING_MAIL_PASSWORD = {
+      value = var.render_mail_password
+    }
+    APP_FRONTEND_BASE_URL = {
+      value = var.render_frontend_base_url
+    }
   }
 
   runtime_source = {

@@ -31,3 +31,12 @@ upstash_email   = "seu_email@exemplo.com"
 render_database_url            = "jdbc:postgresql://user:pass@host:port/db"
 render_redis_connection_string = "rediss://:pass@host:port"
 render_jwt_secret_key          = "sua_chave_secreta_aqui"
+
+# --- EMAIL CONFIGURATION ---
+render_mail_host     = "smtp.gmail.com"
+render_mail_port     = "587"
+render_mail_username = "seu_email@gmail.com"
+render_mail_password = "sua_senha_de_app_aqui"
+
+# --- FRONTEND CONFIGURATION ---
+render_frontend_base_url = "https://agendarpg.gabspassarinhogarcia.uk"

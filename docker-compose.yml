@@ -30,6 +30,18 @@ services:
       - "${MAILPIT_SMTP_PORT:-1025}:1025" # SMTP
       - "${MAILPIT_UI_PORT:-8025}:8025" # Web UI
 
+  redis:
+    image: redis:7-alpine
+    container_name: agenda_rpg_redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   api:
     build: .
     container_name: agenda_rpg_api
@@ -40,12 +52,15 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-agenda_rpg}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-agenda}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-agenda}
+      SPRING_DATA_REDIS_URL: redis://redis:6379
       SPRING_MAIL_HOST: mailpit
       SPRING_MAIL_PORT: 1025
       SPRING_MAIL_USERNAME: ${MAIL_USER:-agenda}
       SPRING_MAIL_PASSWORD: ${MAIL_PASS:-agenda}
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
 volumes:

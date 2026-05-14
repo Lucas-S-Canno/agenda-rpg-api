@@ -104,4 +104,33 @@ variable "cloudflare_zone_id" {
   description = "O Zone ID do domínio raiz (gabspassarinhogarcia.uk)"
   type        = string
 }
+variable "render_mail_host" {
+  description = "Host do servidor SMTP para o Render"
+  type        = string
+  default     = "smtp.gmail.com"
+}
 
+variable "render_mail_port" {
+  description = "Porta do servidor SMTP para o Render"
+  type        = string
+  default     = "587"
+}
+
+variable "render_mail_username" {
+  description = "Usuário do SMTP para o Render"
+  type        = string
+  default     = ""
+}
+
+variable "render_mail_password" {
+  description = "Senha do SMTP para o Render"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "render_frontend_base_url" {
+  description = "URL do Frontend para o Render"
+  type        = string
+  default     = "http://localhost:3000"
+}

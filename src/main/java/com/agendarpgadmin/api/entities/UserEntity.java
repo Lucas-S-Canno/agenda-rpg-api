@@ -21,6 +21,12 @@ public class UserEntity implements Serializable {
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
+    // Explicit getters/setters for Kotlin interop
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
     @PrePersist
     public void prePersist() {
         if (id == null) {
