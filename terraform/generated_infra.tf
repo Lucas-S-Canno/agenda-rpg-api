@@ -19,14 +19,14 @@ resource "upstash_redis_database" "cache" {
 
 # --- Neon Project (Postgres) ---
 resource "neon_project" "main" {
-  compute_provisioner                 = "k8s-neonvm"
-  history_retention_seconds           = 21600
-  name                                = "AgendaRPG"
-  org_id                              = var.neon_org_id
-  pg_version                          = 17
-  region_id                           = "aws-us-west-2"
-  store_password                      = "yes"
-  
+  compute_provisioner       = "k8s-neonvm"
+  history_retention_seconds = 21600
+  name                      = "AgendaRPG"
+  org_id                    = var.neon_org_id
+  pg_version                = 17
+  region_id                 = "aws-us-west-2"
+  store_password            = "yes"
+
   branch {
     database_name = "neondb"
     name          = "production"
@@ -46,11 +46,10 @@ resource "neon_project" "main" {
 
 # --- Render Web Service (Hosting) ---
 resource "render_web_service" "api" {
-  name                = "AgendaRPG"
-  environment_id      = "evm-d72ns77fte5s73aear60" # Replicated from EleveRats
-  region              = "oregon"
-  plan                = "free"
-  health_check_path   = "/api/health" # Spring Boot context path /api
+  name              = "AgendaRPG"
+  region            = "oregon"
+  plan              = "free"
+  health_check_path = "/api/health" # Spring Boot context path /api
 
   custom_domains = [
     {
@@ -103,12 +102,12 @@ resource "render_web_service" "api" {
 
   runtime_source = {
     docker = {
-      auto_deploy            = false
-      auto_deploy_trigger    = "off"
-      branch                 = "main"
-      context                = "."
-      dockerfile_path        = "Dockerfile"
-      repo_url               = "https://github.com/Lucas-S-Canno/agenda-rpg-api"
+      auto_deploy         = false
+      auto_deploy_trigger = "off"
+      branch              = "main"
+      context             = "."
+      dockerfile_path     = "Dockerfile"
+      repo_url            = "https://github.com/Lucas-S-Canno/agenda-rpg-api"
     }
   }
 
