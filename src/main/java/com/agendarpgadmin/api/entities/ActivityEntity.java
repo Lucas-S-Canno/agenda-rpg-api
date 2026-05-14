@@ -1,5 +1,6 @@
 package com.agendarpgadmin.api.entities;
 
+import com.agendarpgadmin.api.services.utils.UuidUtils;
 import com.agendarpgadmin.api.entities.enums.ActivityType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -8,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "atividades")
@@ -18,8 +20,15 @@ import java.time.LocalDateTime;
 public class ActivityEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "id", updatable = false, nullable = false)
+    private UUID id;
+
+    @PrePersist
+    public void prePersist() {
+        if (id == null) {
+            id = UuidUtils.generateV7();
+        }
+    }
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "evento_id", nullable = false)
@@ -54,12 +63,12 @@ public class ActivityEntity {
     private String tags;
 
     @Column(name = "narrador_id")
-    private Long narradorId;
+    private UUID narradorId;
 
     @Column(name = "tema")
     private String tema;
 
     @Column(name = "palestrante_id")
-    private Long palestranteId;
+    private UUID palestranteId;
 }
 

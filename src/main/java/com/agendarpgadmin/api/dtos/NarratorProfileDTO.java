@@ -1,4 +1,5 @@
 package com.agendarpgadmin.api.dtos;
+import java.util.UUID;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,7 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NarratorProfileDTO {
-    private Long id;
+    private UUID id;
     private String apelido;
     private String email;
 }

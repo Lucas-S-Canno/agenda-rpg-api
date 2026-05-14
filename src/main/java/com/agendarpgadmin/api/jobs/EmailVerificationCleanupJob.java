@@ -1,6 +1,6 @@
 package com.agendarpgadmin.api.jobs;
 
-import com.agendarpgadmin.api.services.Public.EmailVerificationService;
+import com.agendarpgadmin.api.services.publics.EmailVerificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;

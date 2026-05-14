@@ -1,4 +1,5 @@
 package com.agendarpgadmin.api.dtos;
+import java.util.UUID;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,12 +15,12 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EventDTO {
-    private Long id;
+    private UUID id;
     private String nome;
     private String local;
     private LocalDateTime inicio;
     private LocalDateTime fim;
-    private Long creatorUserId;
+    private UUID creatorUserId;
     private List<ActivityDTO> atividades = new ArrayList<>();
 
 }

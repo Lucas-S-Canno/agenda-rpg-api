@@ -1,0 +1,73 @@
+name: CI Pipeline
+
+permissions:
+    contents: read
+
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+        branches:
+            - main
+    workflow_dispatch:
+
+jobs:
+    build:
+        name: Build
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+            - name: Setup Java
+              uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4.2.2
+              with:
+                  java-version: '25'
+                  distribution: 'zulu'
+
+            - name: Setup Gradle
+              uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.3.0
+
+            - name: Build
+              run: ./gradlew build -x test
+
+    test:
+        name: Unit Tests
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+            - name: Setup Java
+              uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4.2.2
+              with:
+                  java-version: '25'
+                  distribution: 'zulu'
+
+            - name: Setup Gradle
+              uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.3.0
+
+            - name: Run Tests
+              run: ./gradlew test
+
+    report:
+        name: Final Report
+        needs: [build, test]
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        if: always()
+        steps:
+            - name: Generate Summary
+              run: |
+                  echo "## 🚀 CI Pipeline Execution Summary" >> $GITHUB_STEP_SUMMARY
+                  echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+                  echo "| --- | ------ |" >> $GITHUB_STEP_SUMMARY
+                  echo "| 🔨 Build | ${{ needs.build.result }} |" >> $GITHUB_STEP_SUMMARY
+                  echo "| 🧪 Tests | ${{ needs.test.result }} |" >> $GITHUB_STEP_SUMMARY
+
+            - name: Check overall status
+              if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+              run: exit 1

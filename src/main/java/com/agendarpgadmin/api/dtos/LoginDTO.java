@@ -1,4 +1,5 @@
 package com.agendarpgadmin.api.dtos;
+import java.util.UUID;
 
 public class LoginDTO {
     private String email;

@@ -1,0 +1,42 @@
+# Copyright (C) 2026 Gabriel Passarinho Garcia and Agenda RPG Team
+# Copie este arquivo para 'terraform.tfvars' e preencha com seus dados reais.
+# O arquivo 'terraform.tfvars' não deve ser commitado no repositório.
+
+# --- CLOUDFLARE ---
+# Token com permissão para R2 e DNS
+cloudflare_api_token  = "cole_seu_token_aqui"
+# Account ID
+cloudflare_account_id = "cole_seu_account_id_aqui"
+# Zone ID do domínio raiz
+cloudflare_zone_id    = "cole_seu_zone_id_aqui"
+
+# --- NEON (PostgreSQL Serverless) ---
+# API Key gerada no console do Neon
+neon_api_key = "cole_sua_api_key_aqui"
+# ID da organização (ex: org-...)
+neon_org_id  = "cole_seu_org_id_aqui"
+
+# --- RENDER (Hosting) ---
+# API Key e Owner ID (encontrados em Account Settings)
+render_api_key  = "cole_sua_api_key_aqui"
+render_owner_id = "cole_seu_owner_id_aqui"
+
+# --- UPSTASH (Redis) ---
+# API Key e Email da conta
+upstash_api_key = "cole_sua_api_key_aqui"
+upstash_email   = "seu_email@exemplo.com"
+
+# --- RENDER ENVIRONMENT VARIABLES ---
+# Preencha com os valores que serão injetados no Render
+render_database_url            = "jdbc:postgresql://user:pass@host:port/db"
+render_redis_connection_string = "rediss://:pass@host:port"
+render_jwt_secret_key          = "sua_chave_secreta_aqui"
+
+# --- EMAIL CONFIGURATION ---
+render_mail_host     = "smtp.gmail.com"
+render_mail_port     = "587"
+render_mail_username = "seu_email@gmail.com"
+render_mail_password = "sua_senha_de_app_aqui"
+
+# --- FRONTEND CONFIGURATION ---
+render_frontend_base_url = "https://agendarpg.gabspassarinhogarcia.uk"

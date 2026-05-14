@@ -1,11 +1,13 @@
 package com.agendarpgadmin.api.entities;
 
+import com.agendarpgadmin.api.services.utils.UuidUtils;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "email_verification_tokens", indexes = {
@@ -17,11 +19,18 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class EmailVerificationToken {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "id", updatable = false, nullable = false)
+    private UUID id;
+
+    @PrePersist
+    public void prePersist() {
+        if (id == null) {
+            id = UuidUtils.generateV7();
+        }
+    }
 
     @Column(name = "user_id", nullable = false)
-    private Long userId;
+    private UUID userId;
 
     @Column(nullable = false, unique = true, length = 200)
     private String token;
