@@ -31,20 +31,33 @@ public class SecurityConfig {
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
+
         CorsConfiguration configuration = new CorsConfiguration();
-        
-        // Suporte a lista de origens separadas por vírgula
-        configuration.setAllowedOrigins(Arrays.stream(frontendBaseUrl.split(","))
-                .map(String::trim)
-                .toList());
-        
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*")); // Permite todos os headers para evitar bloqueios por telemetria
-        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+
+        configuration.setAllowedOriginPatterns(
+                Arrays.stream(frontendBaseUrl.split(","))
+                        .map(String::trim)
+                        .toList()
+        );
+
+        configuration.setAllowedMethods(List.of(
+                "GET",
+                "POST",
+                "PATCH",
+                "PUT",
+                "DELETE",
+                "OPTIONS"
+        ));
+
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("Authorization"));
         configuration.setAllowCredentials(true);
-        
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
         source.registerCorsConfiguration("/**", configuration);
+
         return source;
     }
 
