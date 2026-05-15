@@ -53,7 +53,7 @@ resource "render_web_service" "api" {
 
   custom_domains = [
     {
-      name = "agendarpg-api-render.gabspassarinhogarcia.uk"
+      name = "agenda-rpg-api.rpgnoabc.org"
     },
   ]
 
@@ -115,7 +115,8 @@ resource "render_web_service" "api" {
     prevent_destroy = true
     ignore_changes = [
       env_vars,
-      runtime_source
+      runtime_source,
+      custom_domains
     ]
   }
 }
