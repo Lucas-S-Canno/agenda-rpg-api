@@ -26,6 +26,10 @@ public class UserEntity implements Serializable {
     public void setId(UUID id) { this.id = id; }
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
+    public String getPassword() { return password; }
+    public String getNomeCompleto() { return nomeCompleto; }
+    public String getTipo() { return tipo; }
+    public Boolean getEmailVerified() { return emailVerified; }
 
     @PrePersist
     public void prePersist() {

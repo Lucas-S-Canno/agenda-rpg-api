@@ -7,7 +7,7 @@ import com.agendarpgadmin.api.entities.UserEntity;
 import com.agendarpgadmin.api.repositories.UserRepository;
 import com.agendarpgadmin.api.services.utils.PasswordHashingService;
 import com.agendarpgadmin.api.services.utils.UtilsService;
-import com.agendarpgadmin.api.services.utils.JwtUtilsService;
+import com.agendarpgadmin.api.services.utils.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -33,10 +33,11 @@ public class UserService {
     private UtilsService utilsService;
 
     @Autowired
-    private JwtUtilsService jwtUtilsService;
+    private JwtService jwtService;
 
     @Autowired
     private PasswordHashingService passwordHashingService;
+
 
     public Page<UserDTO> searchUsers(
             int page,
@@ -146,9 +147,9 @@ public class UserService {
 
         String rawToken = token.startsWith("Bearer ") ? token.substring(7) : token;
 
-        String email = jwtUtilsService.getEmailFromToken(rawToken);
+        String email = jwtService.getEmailFromToken(rawToken);
         if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException("Email inválido no token");
+            throw new SecurityException("Token inválido ou expirado");
         }
 
         Optional<UserEntity> userOpt = userRepository.findByEmail(email);

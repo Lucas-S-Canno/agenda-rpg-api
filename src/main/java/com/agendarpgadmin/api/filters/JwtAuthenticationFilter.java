@@ -1,7 +1,7 @@
 package com.agendarpgadmin.api.filters;
 
+import com.agendarpgadmin.api.services.utils.JwtService;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -23,8 +24,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
 
-    @Value("${jwt.secret}")
-    private String SECRET_KEY;
+    @Autowired
+    private JwtService jwtService;
 
     @Override
     protected void doFilterInternal(
@@ -51,10 +52,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             String token = authorizationHeader.substring(7);
 
-            Claims claims = Jwts.parser()
-                    .setSigningKey(SECRET_KEY)
-                    .parseClaimsJws(token)
-                    .getBody();
+            Claims claims = jwtService.validateAccessToken(token);
+
+            if (claims == null) {
+                log.warn("Token inválido ou revogado: {}", token);
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token inválido ou revogado");
+                return;
+            }
 
             String username = claims.getSubject();
 

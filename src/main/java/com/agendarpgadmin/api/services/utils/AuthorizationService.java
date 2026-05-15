@@ -1,6 +1,7 @@
 package com.agendarpgadmin.api.services.utils;
 import java.util.UUID;
 
+import com.agendarpgadmin.api.services.utils.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,7 +11,7 @@ import java.util.Set;
 public class AuthorizationService {
 
     @Autowired
-    private JwtUtilsService jwtUtilsService;
+    private JwtService jwtService;
 
     public String extractBearerToken(String authorizationHeader) {
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
@@ -21,7 +22,11 @@ public class AuthorizationService {
 
     public UUID getAuthenticatedUserId(String authorizationHeader) {
         String token = extractBearerToken(authorizationHeader);
-        return UUID.fromString(jwtUtilsService.getUserIdFromToken(token));
+        String userId = jwtService.getUserIdFromToken(token);
+        if (userId == null) {
+            throw new SecurityException("Token inválido ou expirado");
+        }
+        return UUID.fromString(userId);
     }
 
     public void ensureEventManagementAccess(String authorizationHeader) {
@@ -40,12 +45,15 @@ public class AuthorizationService {
     }
 
     public void ensureAnyAuthenticated(String authorizationHeader) {
-        extractBearerToken(authorizationHeader);
+        String token = extractBearerToken(authorizationHeader);
+        if (jwtService.validateAccessToken(token) == null) {
+            throw new SecurityException("Token inválido ou expirado");
+        }
     }
 
     private void ensureRole(String authorizationHeader, Set<String> allowedTypes) {
         String token = extractBearerToken(authorizationHeader);
-        if (!jwtUtilsService.isUserOneOfTypes(token, allowedTypes)) {
+        if (!jwtService.isUserOneOfTypes(token, allowedTypes)) {
             throw new SecurityException("Usuário sem permissão para este recurso");
         }
     }

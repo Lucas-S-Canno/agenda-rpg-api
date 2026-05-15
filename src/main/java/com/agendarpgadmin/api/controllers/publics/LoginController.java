@@ -2,8 +2,12 @@ package com.agendarpgadmin.api.controllers.publics;
 import java.util.UUID;
 
 import com.agendarpgadmin.api.dtos.LoginDTO;
+import com.agendarpgadmin.api.dtos.LoginResponseDTO;
+import com.agendarpgadmin.api.dtos.RefreshTokenDTO;
 import com.agendarpgadmin.api.dtos.ResponseDTO;
 import com.agendarpgadmin.api.services.admin.LoginService;
+import com.agendarpgadmin.api.services.utils.JwtService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,33 +20,76 @@ public class LoginController {
     @Autowired
     private LoginService loginService;
 
+    @Autowired
+    private JwtService jwtService;
+
     @PostMapping
-    public ResponseEntity<ResponseDTO<String>> loginUser(@RequestBody LoginDTO loginDTO) {
+    public ResponseEntity<ResponseDTO<LoginResponseDTO>> loginUser(@RequestBody LoginDTO loginDTO) {
         try {
-            String token = loginService.authenticateUser(loginDTO.getEmail(), loginDTO.getPassword());
-            if (token != null) {
-                ResponseDTO<String> res = new ResponseDTO<>(
+            LoginResponseDTO tokens = loginService.authenticateUser(loginDTO.getEmail(), loginDTO.getPassword());
+            if (tokens != null) {
+                ResponseDTO<LoginResponseDTO> res = new ResponseDTO<>(
                         HttpStatus.OK.value(),
                         HttpStatus.OK.getReasonPhrase(),
-                        token
+                        tokens
                 );
                 return ResponseEntity.ok(res);
             } else {
-                ResponseDTO<String> res = new ResponseDTO<>(
+                ResponseDTO<LoginResponseDTO> res = new ResponseDTO<>(
                         HttpStatus.UNAUTHORIZED.value(),
                         HttpStatus.UNAUTHORIZED.getReasonPhrase(),
-                        "Credenciais inválidas"
+                        null
                 );
                 return ResponseEntity.status(401).body(res);
             }
         } catch (IllegalStateException e) {
-            ResponseDTO<String> res = new ResponseDTO<>(
+            ResponseDTO<LoginResponseDTO> res = new ResponseDTO<>(
                     HttpStatus.FORBIDDEN.value(),
                     "Email não verificado",
-                    "Verifique sua caixa de entrada ou solicite um novo link de verificação"
+                    null
             );
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(res);
         }
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<ResponseDTO<LoginResponseDTO>> refreshToken(@RequestBody RefreshTokenDTO refreshTokenDTO) {
+        LoginResponseDTO newTokens = jwtService.refreshTokens(refreshTokenDTO.getRefreshToken());
+        if (newTokens != null) {
+            ResponseDTO<LoginResponseDTO> res = new ResponseDTO<>(
+                    HttpStatus.OK.value(),
+                    HttpStatus.OK.getReasonPhrase(),
+                    newTokens
+            );
+            return ResponseEntity.ok(res);
+        } else {
+            ResponseDTO<LoginResponseDTO> res = new ResponseDTO<>(
+                    HttpStatus.UNAUTHORIZED.value(),
+                    "Refresh token inválido ou expirado",
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(res);
+        }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ResponseDTO<Void>> logout(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            String email = jwtService.getEmailFromToken(token);
+            if (email != null) {
+                jwtService.revokeAllUserTokens(email);
+            }
+            jwtService.revokeAccessToken(token);
+        }
+        
+        ResponseDTO<Void> res = new ResponseDTO<>(
+                HttpStatus.OK.value(),
+                "Logout realizado com sucesso",
+                null
+        );
+        return ResponseEntity.ok(res);
     }
 
 }
