@@ -5,6 +5,7 @@ import com.agendarpgadmin.api.dtos.ActivityDTO;
 import com.agendarpgadmin.api.dtos.ResponseDTO;
 import com.agendarpgadmin.api.services.user.UserAppActivityService;
 import com.agendarpgadmin.api.services.utils.AuthorizationService;
+import io.micrometer.observation.annotation.Observed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
+@Observed(name = "user.activity.controller")
 public class UserActivityController {
 
     @Autowired
@@ -24,6 +26,7 @@ public class UserActivityController {
     private AuthorizationService authorizationService;
 
     @PostMapping("/activities/{id}/register")
+    @Observed(name = "user.activity.controller.register", contextualName = "http-register-activity")
     public ResponseEntity<ResponseDTO<ActivityDTO>> register(
             @PathVariable UUID id,
             @RequestHeader("Authorization") String authorizationHeader
@@ -55,6 +58,7 @@ public class UserActivityController {
     }
 
     @DeleteMapping("/activities/{id}/register")
+    @Observed(name = "user.activity.controller.unregister", contextualName = "http-unregister-activity")
     public ResponseEntity<ResponseDTO<ActivityDTO>> unregister(
             @PathVariable UUID id,
             @RequestHeader("Authorization") String authorizationHeader
@@ -82,6 +86,7 @@ public class UserActivityController {
     }
 
     @GetMapping("/user-app/activities/my-registrations")
+    @Observed(name = "user.activity.controller.myregistrations", contextualName = "http-get-my-registrations")
     public ResponseEntity<ResponseDTO<List<ActivityDTO>>> myRegistrations(
             @RequestHeader("Authorization") String authorizationHeader
     ) {
@@ -101,6 +106,7 @@ public class UserActivityController {
     }
 
     @GetMapping("/user-app/activities/my-creations")
+    @Observed(name = "user.activity.controller.mycreations", contextualName = "http-get-my-creations")
     public ResponseEntity<ResponseDTO<List<ActivityDTO>>> myCreations(
             @RequestHeader("Authorization") String authorizationHeader
     ) {
@@ -119,5 +125,3 @@ public class UserActivityController {
         }
     }
 }
-
-

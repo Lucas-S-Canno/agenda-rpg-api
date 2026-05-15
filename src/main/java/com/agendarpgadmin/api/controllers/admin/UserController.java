@@ -4,6 +4,7 @@ import java.util.UUID;
 import com.agendarpgadmin.api.dtos.ResponseDTO;
 import com.agendarpgadmin.api.dtos.UserDTO;
 import com.agendarpgadmin.api.services.admin.UserService;
+import io.micrometer.observation.annotation.Observed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/user")
+@Observed(name = "admin.user.controller")
 public class UserController {
 
     @Autowired
@@ -23,6 +25,7 @@ public class UserController {
 //    New Endpoints
 
    @PostMapping("/validate-admin")
+   @Observed(name = "admin.user.controller.validateadmin", contextualName = "http-validate-admin")
    public ResponseEntity<ResponseDTO<Boolean>> validateAdminUser(@RequestHeader("Authorization") String token) {
        try {
            UserDTO validatedUser = userService.validateAdminUser(token);
@@ -43,6 +46,7 @@ public class UserController {
    }
 
     @GetMapping("/search")
+    @Observed(name = "admin.user.controller.search", contextualName = "http-search-users")
     public ResponseEntity<ResponseDTO<Page<UserDTO>>> searchUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -96,6 +100,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
+    @Observed(name = "admin.user.controller.update", contextualName = "http-update-user")
     public ResponseEntity<ResponseDTO<UserDTO>> updateUser(
             @PathVariable UUID id,
             @RequestBody UserDTO userDTO,
@@ -137,6 +142,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
+    @Observed(name = "admin.user.controller.delete", contextualName = "http-delete-user")
     public ResponseEntity<ResponseDTO<String>> deleteEvent(
             @PathVariable UUID id,
             @RequestHeader("Authorization") String token
@@ -178,6 +184,7 @@ public class UserController {
     }
 
     @PostMapping
+    @Observed(name = "admin.user.controller.create", contextualName = "http-create-user")
     public ResponseEntity<ResponseDTO<UserDTO>> createUser(
             @RequestBody UserDTO userDTO,
             @RequestHeader("Authorization") String token
@@ -218,6 +225,7 @@ public class UserController {
 //    OLD
 
     @GetMapping
+    @Observed(name = "admin.user.controller.getall", contextualName = "http-get-all-users")
     public ResponseEntity<ResponseDTO<List<UserDTO>>> getAllUsers(
             @RequestHeader("Authorization") String token
     ) {

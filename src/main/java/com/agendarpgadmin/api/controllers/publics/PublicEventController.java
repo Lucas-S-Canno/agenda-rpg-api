@@ -4,6 +4,7 @@ import java.util.UUID;
 import com.agendarpgadmin.api.dtos.EventDTO;
 import com.agendarpgadmin.api.dtos.ResponseDTO;
 import com.agendarpgadmin.api.services.admin.EventService;
+import io.micrometer.observation.annotation.Observed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,12 +19,14 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/public/event")
+@Observed(name = "public.event.controller")
 public class PublicEventController {
 
     @Autowired
     private EventService eventService;
 
     @GetMapping
+    @Observed(name = "public.event.controller.getall", contextualName = "http-get-public-events")
     public ResponseEntity<ResponseDTO<List<EventDTO>>> getAllEvents() {
         try {
             List<EventDTO> events = eventService.getUpcomingEvents();
@@ -42,6 +45,7 @@ public class PublicEventController {
     }
 
     @GetMapping("/{id}")
+    @Observed(name = "public.event.controller.getbyid", contextualName = "http-get-public-event-by-id")
     public ResponseEntity<ResponseDTO<EventDTO>> getEventById(@PathVariable UUID id) {
         try {
             EventDTO event = eventService.findById(id);

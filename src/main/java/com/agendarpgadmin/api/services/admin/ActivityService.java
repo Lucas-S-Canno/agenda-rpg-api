@@ -10,6 +10,7 @@ import com.agendarpgadmin.api.repositories.ActivityParticipantRepository;
 import com.agendarpgadmin.api.repositories.ActivityRepository;
 import com.agendarpgadmin.api.repositories.EventRepository;
 import com.agendarpgadmin.api.repositories.UserRepository;
+import io.micrometer.observation.annotation.Observed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Service
+@Observed(name = "admin.activity.service")
 public class ActivityService {
 
     @Autowired
@@ -33,16 +35,19 @@ public class ActivityService {
     @Autowired
     private ActivityParticipantRepository activityParticipantRepository;
 
+    @Observed(name = "admin.activity.getbyevent", contextualName = "admin-get-activities-by-event")
     public List<ActivityDTO> getByEventId(UUID eventId) {
         return activityRepository.findByEventoId(eventId).stream()
                 .map(this::convertToDTO)
                 .toList();
     }
 
+    @Observed(name = "admin.activity.findbyid", contextualName = "admin-find-activity-by-id")
     public ActivityDTO findById(UUID id) {
         return activityRepository.findById(id).map(this::convertToDTO).orElse(null);
     }
 
+    @Observed(name = "admin.activity.create", contextualName = "admin-create-activity")
     public ActivityDTO create(UUID eventId, ActivityDTO dto) {
         EventEntity event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new IllegalArgumentException("Evento não encontrado"));
@@ -55,6 +60,7 @@ public class ActivityService {
         return convertToDTO(entity);
     }
 
+    @Observed(name = "admin.activity.update", contextualName = "admin-update-activity")
     public ActivityDTO update(UUID id, ActivityDTO dto) {
         ActivityEntity current = activityRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Atividade não encontrada"));
@@ -80,6 +86,7 @@ public class ActivityService {
         return convertToDTO(current);
     }
 
+    @Observed(name = "admin.activity.delete", contextualName = "admin-delete-activity")
     public void delete(UUID id) {
         activityRepository.deleteById(id);
     }
@@ -187,4 +194,3 @@ public class ActivityService {
         );
     }
 }
-

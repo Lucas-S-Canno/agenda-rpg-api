@@ -8,6 +8,7 @@ import com.agendarpgadmin.api.repositories.UserRepository;
 import com.agendarpgadmin.api.services.utils.PasswordHashingService;
 import com.agendarpgadmin.api.services.utils.UtilsService;
 import com.agendarpgadmin.api.services.utils.JwtService;
+import io.micrometer.observation.annotation.Observed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +25,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Observed(name = "admin.user.service")
 public class UserService {
 
     @Autowired
@@ -38,7 +40,7 @@ public class UserService {
     @Autowired
     private PasswordHashingService passwordHashingService;
 
-
+    @Observed(name = "admin.user.search", contextualName = "admin-search-users")
     public Page<UserDTO> searchUsers(
             int page,
             int size,
@@ -83,19 +85,23 @@ public class UserService {
         return pageEntity.map(utilsService::convertToDTO);
     }
 
+    @Observed(name = "admin.user.getall", contextualName = "admin-get-all-users")
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll().stream().map(utilsService::convertToDTO).collect(Collectors.toList());
     }
 
+    @Observed(name = "admin.user.findbyid", contextualName = "admin-find-user-by-id")
     public UserDTO findById(UUID id) {
         Optional<UserEntity> user = userRepository.findById(id);
         return user.map(utilsService::convertToDTO).orElse(null);
     }
 
+    @Observed(name = "admin.user.getbytipos", contextualName = "admin-get-users-by-tipos")
     public List<UserDTO> getUsersByTipos(List<String> tipos) {
         return userRepository.findByTipoIn(tipos).stream().map(utilsService::convertToDTO).collect(Collectors.toList());
     }
 
+    @Observed(name = "admin.user.create", contextualName = "admin-create-user")
     public UserDTO createUser(UserDTO userDTO) {
         UserEntity userEntity = utilsService.convertToEntity(userDTO);
         userEntity.setPassword(passwordHashingService.hashPassword(userEntity.getPassword()));
@@ -121,10 +127,12 @@ public class UserService {
         return response;
     }
 
+    @Observed(name = "admin.user.delete", contextualName = "admin-delete-user")
     public void delete(UUID id) {
         userRepository.deleteById(id);
     }
 
+    @Observed(name = "admin.user.update", contextualName = "admin-update-user")
     public UserDTO update(UUID id, UserDTO user) {
         UserEntity userEntity = utilsService.convertToEntity(user);
         userEntity.setId(id);
@@ -140,6 +148,7 @@ public class UserService {
         return utilsService.convertToDTO(userEntity);
     }
 
+    @Observed(name = "admin.user.validateadmin", contextualName = "admin-validate-admin-token")
     public UserDTO validateAdminUser(String token) {
         if (token == null) {
             throw new IllegalArgumentException("Token is required");

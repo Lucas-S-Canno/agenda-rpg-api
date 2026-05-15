@@ -7,6 +7,7 @@ import com.agendarpgadmin.api.dtos.RefreshTokenDTO;
 import com.agendarpgadmin.api.dtos.ResponseDTO;
 import com.agendarpgadmin.api.services.admin.LoginService;
 import com.agendarpgadmin.api.services.utils.JwtService;
+import io.micrometer.observation.annotation.Observed;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/login")
+@Observed(name = "public.login.controller")
 public class LoginController {
 
     @Autowired
@@ -24,6 +26,7 @@ public class LoginController {
     private JwtService jwtService;
 
     @PostMapping
+    @Observed(name = "public.login.controller.login", contextualName = "http-login-user")
     public ResponseEntity<ResponseDTO<LoginResponseDTO>> loginUser(@RequestBody LoginDTO loginDTO) {
         try {
             LoginResponseDTO tokens = loginService.authenticateUser(loginDTO.getEmail(), loginDTO.getPassword());
@@ -53,6 +56,7 @@ public class LoginController {
     }
 
     @PostMapping("/refresh")
+    @Observed(name = "public.login.controller.refresh", contextualName = "http-refresh-token")
     public ResponseEntity<ResponseDTO<LoginResponseDTO>> refreshToken(@RequestBody RefreshTokenDTO refreshTokenDTO) {
         LoginResponseDTO newTokens = jwtService.refreshTokens(refreshTokenDTO.getRefreshToken());
         if (newTokens != null) {
@@ -73,6 +77,7 @@ public class LoginController {
     }
 
     @PostMapping("/logout")
+    @Observed(name = "public.login.controller.logout", contextualName = "http-logout-user")
     public ResponseEntity<ResponseDTO<Void>> logout(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
