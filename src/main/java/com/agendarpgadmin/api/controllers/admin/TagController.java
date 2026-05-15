@@ -4,6 +4,7 @@ import java.util.UUID;
 import com.agendarpgadmin.api.dtos.ResponseDTO;
 import com.agendarpgadmin.api.dtos.TagDTO;
 import com.agendarpgadmin.api.services.admin.TagService;
+import io.micrometer.observation.annotation.Observed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,12 +14,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/tags")
+@Observed(name = "admin.tag.controller")
 public class TagController {
 
     @Autowired
     private TagService tagService;
 
     @GetMapping
+    @Observed(name = "admin.tag.controller.getall", contextualName = "http-get-all-tags")
     public ResponseEntity<ResponseDTO<List<TagDTO>>> getAllTags() {
         try {
             List<TagDTO> tags = tagService.getAllTags();
@@ -37,6 +40,7 @@ public class TagController {
     }
 
     @GetMapping("/{id}")
+    @Observed(name = "admin.tag.controller.getbyid", contextualName = "http-get-tag-by-id")
     public ResponseEntity<TagDTO> getTagById(@PathVariable UUID id) {
         try {
             TagDTO tag = tagService.findById(id);
@@ -53,6 +57,7 @@ public class TagController {
     }
 
     @PostMapping
+    @Observed(name = "admin.tag.controller.create", contextualName = "http-create-tag")
     public ResponseEntity<ResponseDTO<TagDTO>> createTag(@RequestBody TagDTO tagDTO) {
         try {
             TagDTO createdTag = tagService.createTag(tagDTO);
@@ -72,6 +77,7 @@ public class TagController {
     }
 
     @PutMapping
+    @Observed(name = "admin.tag.controller.update", contextualName = "http-update-tag")
     public ResponseEntity<ResponseDTO<TagDTO>> updateTag(@RequestBody TagDTO tagDTO) {
         try {
             TagDTO updatedTag = tagService.updateTag(tagDTO);
@@ -91,6 +97,7 @@ public class TagController {
     }
 
     @DeleteMapping("/{id}")
+    @Observed(name = "admin.tag.controller.delete", contextualName = "http-delete-tag")
     public ResponseEntity<ResponseDTO<String>> deleteTag(@PathVariable UUID id) {
         try {
             TagDTO tag = tagService.findById(id);

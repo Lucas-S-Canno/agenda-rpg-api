@@ -9,6 +9,7 @@ import com.agendarpgadmin.api.entities.UserEntity;
 import com.agendarpgadmin.api.filters.JwtAuthenticationFilter;
 import com.agendarpgadmin.api.repositories.UserRepository;
 import com.agendarpgadmin.api.services.utils.PasswordHashingService;
+import io.micrometer.observation.annotation.Observed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -20,6 +21,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Observed(name = "user.info.service")
 public class UserInfoService {
     @Autowired
     private UserRepository userRepository;
@@ -27,19 +29,23 @@ public class UserInfoService {
     @Autowired
     private PasswordHashingService passwordHashingService;
 
+    @Observed(name = "user.info.getall", contextualName = "user-get-all-users")
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll().stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
+    @Observed(name = "user.info.findbyid", contextualName = "user-find-user-by-id")
     public UserDTO findById(UUID id) {
         Optional<UserEntity> user = userRepository.findById(id);
         return user.map(this::convertToDTO).orElse(null);
     }
 
+    @Observed(name = "user.info.getbytipos", contextualName = "user-get-users-by-tipos")
     public List<UserDTO> getUsersByTipos(List<String> tipos) {
         return userRepository.findByTipoIn(tipos).stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
+    @Observed(name = "user.info.create", contextualName = "user-create-user")
     public UserDTO createUser(UserDTO userDTO) {
         UserEntity userEntity = convertToEntity(userDTO);
         userEntity.setPassword(passwordHashingService.hashPassword(userEntity.getPassword()));
@@ -65,10 +71,12 @@ public class UserInfoService {
         return response;
     }
 
+    @Observed(name = "user.info.delete", contextualName = "user-delete-user")
     public void delete(UUID id) {
         userRepository.deleteById(id);
     }
 
+    @Observed(name = "user.info.update", contextualName = "user-update-user")
     public UserDTO update(UUID id, UserDTO user) {
         UserEntity userEntity = convertToEntity(user);
         userEntity.setId(id);
@@ -127,11 +135,13 @@ public class UserInfoService {
         return validTipos.contains(tipo);
     }
 
+    @Observed(name = "user.info.findbyemail", contextualName = "user-find-user-by-email")
     public UserDTO findByEmail(String email) {
         Optional<UserEntity> user = userRepository.findByEmail(email);
         return user.map(this::convertToDTO).orElse(null);
     }
 
+    @Observed(name = "user.info.updateprofile", contextualName = "user-update-profile")
     public UserDTO updateProfile(String authenticatedEmail, UpdateProfileDTO updateProfileDTO) {
         // Buscar o usuário atual pelo email autenticado
         Optional<UserEntity> userOptional = userRepository.findByEmail(authenticatedEmail);
@@ -163,6 +173,7 @@ public class UserInfoService {
         return convertToDTO(user);
     }
 
+    @Observed(name = "user.info.updateprofilevalidation", contextualName = "user-update-profile-with-validation")
     public UserDTO updateProfileWithValidation(String authenticatedEmail, UUID userId, UserDTO userDTO) {
         // Buscar o usuário autenticado
         Optional<UserEntity> authenticatedUserOptional = userRepository.findByEmail(authenticatedEmail);
@@ -223,6 +234,7 @@ public class UserInfoService {
         return convertToDTO(targetUser);
     }
 
+    @Observed(name = "user.info.changepassword", contextualName = "user-change-password")
     public UserDTO changePassword(String authenticatedEmail, ChangePasswordDTO changePasswordDTO) {
         // Validar se o email do JWT não é nulo ou vazio
         if (authenticatedEmail == null || authenticatedEmail.trim().isEmpty()) {

@@ -9,7 +9,8 @@ FROM azul/zulu-openjdk-alpine:25-latest AS build
 WORKDIR /src
 
 # Removido o 'kotlin', mantido o 'bash' que é essencial para o gradlew
-RUN apk add --no-cache bash
+# Adicionado wget para baixar o OpenTelemetry Java Agent
+RUN apk add --no-cache bash wget
 
 # O restante segue o baile...
 COPY ["gradlew", "build.gradle", "settings.gradle", "./"]
@@ -20,6 +21,9 @@ RUN chmod +x gradlew
 
 # Pre-download dependencies (caching layer)
 RUN ./gradlew dependencies --no-daemon || true
+
+# Download OpenTelemetry Java Agent (The Magic Artifact)
+RUN wget -O /src/opentelemetry-javaagent.jar https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar
 
 # Copy the rest of the source code
 COPY src src
@@ -48,8 +52,19 @@ USER rpgadmin
 EXPOSE 8080
 ENV SERVER_PORT=8080
 
-# Copy the executable jar from the build stage
+# Copy the executable jar and the OpenTelemetry Java Agent from the build stage
 COPY --from=build /src/app.jar .
+COPY --from=build /src/opentelemetry-javaagent.jar .
 
-# Run the application
+# Run the application with the OpenTelemetry Java Agent
+# We use JAVA_TOOL_OPTIONS to let the JVM automatically pick up the agent
+ENV JAVA_TOOL_OPTIONS="-javaagent:/app/opentelemetry-javaagent.jar"
+
+# Set default OTLP endpoint (can be overridden by docker-compose or kubernetes)
+ENV OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4317"
+ENV OTEL_SERVICE_NAME="agenda-rpg-api"
+ENV OTEL_METRICS_EXPORTER="none"
+# We use Micrometer for metrics (from build.gradle), so we disable the agent's built-in metrics exporter to avoid conflicts.
+# The agent will still handle traces and logs.
+
 ENTRYPOINT ["java", "-jar", "app.jar"]

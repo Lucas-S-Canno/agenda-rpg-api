@@ -5,6 +5,7 @@ import com.agendarpgadmin.api.dtos.EventDTO;
 import com.agendarpgadmin.api.dtos.ResponseDTO;
 import com.agendarpgadmin.api.services.admin.EventService;
 import com.agendarpgadmin.api.services.utils.AuthorizationService;
+import io.micrometer.observation.annotation.Observed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/events")
+@Observed(name = "admin.event.controller")
 public class EventController {
     @Autowired
     private EventService eventService;
@@ -22,6 +24,7 @@ public class EventController {
     private AuthorizationService authorizationService;
 
     @GetMapping
+    @Observed(name = "admin.event.controller.getallevents", contextualName = "http-get-all-events")
     public ResponseEntity<ResponseDTO<List<EventDTO>>> getAllEvents() {
         try {
             List<EventDTO> events = eventService.findAll();
@@ -38,6 +41,7 @@ public class EventController {
     }
 
     @GetMapping("/{id}")
+    @Observed(name = "admin.event.controller.geteventbyid", contextualName = "http-get-event-by-id")
     public ResponseEntity<ResponseDTO<EventDTO>> getEventById(@PathVariable UUID id) {
     try {
         EventDTO event = eventService.findById(id);
@@ -54,6 +58,7 @@ public class EventController {
     }
 
     @PostMapping
+    @Observed(name = "admin.event.controller.createevent", contextualName = "http-create-event")
     public ResponseEntity<ResponseDTO<EventDTO>> createEvent(
             @RequestBody EventDTO eventDTO,
             @RequestHeader("Authorization") String authorizationHeader
@@ -93,6 +98,7 @@ public class EventController {
     }
 
     @GetMapping("/my-created")
+    @Observed(name = "admin.event.controller.getmycreatedevents", contextualName = "http-get-my-created-events")
     public ResponseEntity<ResponseDTO<List<EventDTO>>> getMyCreatedEvents(
             @RequestHeader("Authorization") String authorizationHeader
     ) {
@@ -124,6 +130,7 @@ public class EventController {
     }
 
     @PutMapping("/{id}")
+    @Observed(name = "admin.event.controller.updateevent", contextualName = "http-update-event")
     public ResponseEntity<ResponseDTO<EventDTO>> updateEvent(
             @PathVariable UUID id,
             @RequestBody EventDTO eventDTO,
@@ -163,6 +170,7 @@ public class EventController {
     }
 
     @DeleteMapping("/{id}")
+    @Observed(name = "admin.event.controller.deleteevent", contextualName = "http-delete-event")
     public ResponseEntity<ResponseDTO<String>> deleteEvent(
             @PathVariable UUID id,
             @RequestHeader("Authorization") String authorizationHeader

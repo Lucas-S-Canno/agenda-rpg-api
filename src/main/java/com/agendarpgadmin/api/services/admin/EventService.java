@@ -8,6 +8,7 @@ import com.agendarpgadmin.api.entities.ActivityEntity;
 import com.agendarpgadmin.api.entities.EventEntity;
 import com.agendarpgadmin.api.repositories.ActivityRepository;
 import com.agendarpgadmin.api.repositories.EventRepository;
+import io.micrometer.observation.annotation.Observed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Observed(name = "admin.event.service")
 public class EventService {
 
     @Autowired
@@ -27,17 +29,20 @@ public class EventService {
     @Autowired
     private ActivityRepository activityRepository;
 
+    @Observed(name = "admin.event.findall", contextualName = "admin-find-all-events")
     public List<EventDTO> findAll() {
         return eventoRepository.findAllByOrderByInicioDesc().stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
+    @Observed(name = "admin.event.findbyid", contextualName = "admin-find-event-by-id")
     public EventDTO findById(UUID id) {
         Optional<EventEntity> evento = eventoRepository.findById(id);
         return evento.map(this::convertToDTO).orElse(null);
     }
 
+    @Observed(name = "admin.event.create", contextualName = "admin-create-event")
     public EventDTO create(EventDTO eventDTO, UUID creatorUserId) {
         validateEvent(eventDTO);
         EventEntity eventoEntity = convertToEntity(eventDTO);
@@ -46,6 +51,7 @@ public class EventService {
         return convertToDTO(eventoEntity);
     }
 
+    @Observed(name = "admin.event.delete", contextualName = "admin-delete-event")
     public void delete(UUID id) {
         eventoRepository.deleteById(id);
     }
@@ -114,6 +120,7 @@ public class EventService {
         return response;
     }
 
+    @Observed(name = "admin.event.update", contextualName = "admin-update-event")
     public EventDTO update(UUID id, EventDTO eventDTO) {
         validateEvent(eventDTO);
         EventEntity eventoEntity = convertToEntity(eventDTO);
@@ -126,12 +133,14 @@ public class EventService {
         return convertToDTO(eventoEntity);
     }
 
+    @Observed(name = "admin.event.findbycreator", contextualName = "admin-find-events-by-creator")
     public List<EventDTO> findByCreatorUserId(UUID creatorUserId) {
         return eventoRepository.findByCreatorUserIdOrderByInicioDesc(creatorUserId).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
+    @Observed(name = "admin.event.upcoming", contextualName = "admin-find-upcoming-events")
     public List<EventDTO> getUpcomingEvents() {
         LocalDateTime now = LocalDateTime.now();
         return eventoRepository.findByInicioGreaterThanEqualOrderByInicioAsc(now)

@@ -5,6 +5,7 @@ import com.agendarpgadmin.api.dtos.ActivityDTO;
 import com.agendarpgadmin.api.dtos.ResponseDTO;
 import com.agendarpgadmin.api.services.admin.ActivityService;
 import com.agendarpgadmin.api.services.utils.AuthorizationService;
+import io.micrometer.observation.annotation.Observed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@Observed(name = "admin.activity.controller")
 public class ActivityController {
 
     @Autowired
@@ -22,6 +24,7 @@ public class ActivityController {
     private AuthorizationService authorizationService;
 
     @GetMapping("/events/{eventId}/activities")
+    @Observed(name = "admin.activity.controller.getbyevent", contextualName = "http-get-activities-by-event")
     public ResponseEntity<ResponseDTO<List<ActivityDTO>>> getActivitiesByEvent(@PathVariable UUID eventId) {
         try {
             List<ActivityDTO> activities = activityService.getByEventId(eventId);
@@ -42,6 +45,7 @@ public class ActivityController {
     }
 
     @PostMapping("/events/{eventId}/activities")
+    @Observed(name = "admin.activity.controller.create", contextualName = "http-create-activity")
     public ResponseEntity<ResponseDTO<ActivityDTO>> createActivity(
             @PathVariable UUID eventId,
             @RequestBody ActivityDTO dto,
@@ -69,6 +73,7 @@ public class ActivityController {
     }
 
     @GetMapping("/activities/{id}")
+    @Observed(name = "admin.activity.controller.getbyid", contextualName = "http-get-activity-by-id")
     public ResponseEntity<ResponseDTO<ActivityDTO>> getActivityById(@PathVariable UUID id) {
         try {
             ActivityDTO activity = activityService.findById(id);
@@ -89,6 +94,7 @@ public class ActivityController {
     }
 
     @PutMapping("/activities/{id}")
+    @Observed(name = "admin.activity.controller.update", contextualName = "http-update-activity")
     public ResponseEntity<ResponseDTO<ActivityDTO>> updateActivity(
             @PathVariable UUID id,
             @RequestBody ActivityDTO dto,
@@ -115,6 +121,7 @@ public class ActivityController {
     }
 
     @DeleteMapping("/activities/{id}")
+    @Observed(name = "admin.activity.controller.delete", contextualName = "http-delete-activity")
     public ResponseEntity<ResponseDTO<String>> deleteActivity(
             @PathVariable UUID id,
             @RequestHeader("Authorization") String authorizationHeader
@@ -136,4 +143,3 @@ public class ActivityController {
         }
     }
 }
-
