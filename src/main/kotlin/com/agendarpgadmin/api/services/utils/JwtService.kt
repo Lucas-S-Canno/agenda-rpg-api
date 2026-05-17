@@ -22,9 +22,9 @@ import javax.crypto.SecretKey
  */
 @Service
 class JwtService(
-    @Value("\${jwt.secret}") private val secret: String,
-    @Value("\${jwt.access-token.expiration:86400000}") private val accessTokenExpiration: Long,
-    @Value("\${jwt.refresh-token.expiration-days:7}") private val refreshTokenExpirationDays: Long,
+    @param:Value("\${jwt.secret}") private val secret: String,
+    @param:Value("\${jwt.access-token.expiration:86400000}") private val accessTokenExpiration: Long,
+    @param:Value("\${jwt.refresh-token.expiration-days:7}") private val refreshTokenExpirationDays: Long,
     private val tokenRedisRepository: TokenRedisRepository,
     private val refreshTokenRepository: RefreshTokenRepository,
     private val passwordHashingService: PasswordHashingService
@@ -50,8 +50,13 @@ class JwtService(
             .signWith(signingKey, SignatureAlgorithm.HS256)
             .compact()
 
-        // Whitelist no Redis para controle de sessão/logout
-        tokenRedisRepository.save(token, user.getEmail() ?: "unknown", accessTokenExpiration / 1000)
+        // Whitelist no Redis para controle de sessão/logout (best-effort, pode falhar se Redis não estiver disponível)
+        try {
+            tokenRedisRepository.save(token, user.getEmail() ?: "unknown", accessTokenExpiration / 1000)
+        } catch (e: Exception) {
+            // Redis não disponível, continua com token válido (sem whitelist temporariamente)
+            // Log via SLF4J se necessário, mas não afeta o fluxo de autenticação
+        }
 
         return token
     }
@@ -85,7 +90,7 @@ class JwtService(
         val parts = compositeToken.split(".")
         if (parts.size != 2) return null
 
-        val tokenId = try { UUID.fromString(parts[0]) } catch (e: Exception) { return null }
+        val tokenId = try { UUID.fromString(parts[0]) } catch (_: Exception) { return null }
         val secret = parts[1]
 
         val tokenEntity = refreshTokenRepository.findById(tokenId).orElse(null) ?: return null
@@ -127,12 +132,17 @@ class JwtService(
                 .body
 
             // Verifica se o token ainda é bem-vindo na nossa taverna (Redis)
-            if (!tokenRedisRepository.exists(token)) {
-                return null
+            // Se Redis não estiver disponível, permite o token (best-effort)
+            try {
+                if (!tokenRedisRepository.exists(token)) {
+                    return null
+                }
+            } catch (e: Exception) {
+                // Redis não disponível, permite o token (sem revogação temporária)
             }
 
             claims
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
     }
@@ -141,7 +151,11 @@ class JwtService(
      * Revoga um Access Token (Logout).
      */
     fun revokeAccessToken(token: String) {
-        tokenRedisRepository.delete(token)
+        try {
+            tokenRedisRepository.delete(token)
+        } catch (e: Exception) {
+            // Redis não disponível, token continua válido até expirar naturalmente
+        }
     }
 
     /**
