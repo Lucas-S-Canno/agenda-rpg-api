@@ -1,5 +1,4 @@
 package com.agendarpgadmin.api.controllers.publics;
-import java.util.UUID;
 
 import com.agendarpgadmin.api.dtos.LoginDTO;
 import com.agendarpgadmin.api.dtos.LoginResponseDTO;

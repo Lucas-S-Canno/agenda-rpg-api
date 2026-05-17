@@ -6,13 +6,12 @@ import com.agendarpgadmin.api.dtos.ResponseDTO;
 import com.agendarpgadmin.api.dtos.UpdateProfileDTO;
 import com.agendarpgadmin.api.dtos.UserDTO;
 import com.agendarpgadmin.api.entities.UserEntity;
-import com.agendarpgadmin.api.filters.JwtAuthenticationFilter;
 import com.agendarpgadmin.api.repositories.UserRepository;
+import com.agendarpgadmin.api.services.UserCacheService;
 import com.agendarpgadmin.api.services.utils.PasswordHashingService;
 import io.micrometer.observation.annotation.Observed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -29,6 +28,9 @@ public class UserInfoService {
     @Autowired
     private PasswordHashingService passwordHashingService;
 
+    @Autowired
+    private UserCacheService userCacheService;
+
     @Observed(name = "user.info.getall", contextualName = "user-get-all-users")
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll().stream().map(this::convertToDTO).collect(Collectors.toList());
@@ -36,7 +38,13 @@ public class UserInfoService {
 
     @Observed(name = "user.info.findbyid", contextualName = "user-find-user-by-id")
     public UserDTO findById(UUID id) {
+        // Cache read-through: tenta o Redis antes de ir ao banco
+        UserEntity cached = userCacheService.getCachedUser(id.toString());
+        if (cached != null) {
+            return convertToDTO(cached);
+        }
         Optional<UserEntity> user = userRepository.findById(id);
+        user.ifPresent(userCacheService::cacheUser);
         return user.map(this::convertToDTO).orElse(null);
     }
 
@@ -74,6 +82,7 @@ public class UserInfoService {
     @Observed(name = "user.info.delete", contextualName = "user-delete-user")
     public void delete(UUID id) {
         userRepository.deleteById(id);
+        userCacheService.evictUser(id.toString());
     }
 
     @Observed(name = "user.info.update", contextualName = "user-update-user")
@@ -90,6 +99,8 @@ public class UserInfoService {
         }
 
         userEntity = userRepository.save(userEntity);
+        // Evict cache após qualquer mutação — próxima leitura buscará dado atualizado do banco
+        userCacheService.evictUser(id.toString());
         return convertToDTO(userEntity);
     }
 
@@ -169,6 +180,7 @@ public class UserInfoService {
 
         // Salvar as alterações
         user = userRepository.save(user);
+        userCacheService.evictUser(user.getId().toString());
 
         return convertToDTO(user);
     }
@@ -230,6 +242,7 @@ public class UserInfoService {
 
         // Salvar as alterações
         targetUser = userRepository.save(targetUser);
+        userCacheService.evictUser(targetUser.getId().toString());
 
         return convertToDTO(targetUser);
     }
@@ -273,6 +286,8 @@ public class UserInfoService {
         // Atualizar a senha com o hash seguro
         user.setPassword(passwordHashingService.hashPassword(changePasswordDTO.getNovaSenha()));
         user = userRepository.save(user);
+        // Evict cache: senha alterada → dados em cache estão desatualizados
+        userCacheService.evictUser(user.getId().toString());
 
         return convertToDTO(user);
     }

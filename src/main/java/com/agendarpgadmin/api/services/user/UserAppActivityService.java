@@ -7,6 +7,7 @@ import com.agendarpgadmin.api.entities.ActivityParticipantEntity;
 import com.agendarpgadmin.api.entities.enums.ActivityType;
 import com.agendarpgadmin.api.repositories.ActivityParticipantRepository;
 import com.agendarpgadmin.api.repositories.ActivityRepository;
+import com.agendarpgadmin.api.repositories.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,12 +31,20 @@ public class UserAppActivityService {
     @Autowired
     private ActivityParticipantRepository activityParticipantRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Transactional
     public ActivityDTO register(UUID activityId, UUID userId) {
         log.info("Register request received. activityId={}, userId={}", activityId, userId);
 
         ActivityEntity activity = activityRepository.findById(activityId)
                 .orElseThrow(() -> new IllegalArgumentException("Atividade não encontrada"));
+
+        if (!userRepository.existsById(userId)) {
+            log.warn("User not found for registration. activityId={}, userId={}", activityId, userId);
+            throw new IllegalArgumentException("Usuário não encontrado");
+        }
 
         if (activityParticipantRepository.existsByAtividadeIdAndUsuarioId(activityId, userId)) {
             log.warn("User already registered. activityId={}, userId={}", activityId, userId);
@@ -135,4 +144,3 @@ public class UserAppActivityService {
         );
     }
 }
-

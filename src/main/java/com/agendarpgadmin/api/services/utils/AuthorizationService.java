@@ -1,7 +1,6 @@
 package com.agendarpgadmin.api.services.utils;
 import java.util.UUID;
 
-import com.agendarpgadmin.api.services.utils.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -58,4 +57,3 @@ public class AuthorizationService {
         }
     }
 }
-
