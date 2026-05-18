@@ -1,73 +1,87 @@
 package com.agendarpgadmin.api.services.utils;
-import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.resend.Resend;
+import com.resend.services.emails.model.CreateEmailOptions;
+import com.resend.services.emails.model.CreateEmailResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class EmailService {
 
-    @Autowired
-    private JavaMailSender emailSender;
+    private final Resend resend;
+    private final String fromEmail;
 
-    @Value("${spring.mail.username}")
-    private String fromEmail;
+    public EmailService(
+            @Value("${resend.api-key}") String apiKey,
+            @Value("${resend.from-email}") String fromEmail
+    ) {
+        this.resend = new Resend(apiKey);
+        this.fromEmail = fromEmail;
+    }
 
     public void sendResetCode(String email, String code) {
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(fromEmail);
-            message.setTo(email);
-            message.setSubject("Código de Recuperação de Senha");
-            message.setText(buildEmailContent(code));
+            CreateEmailOptions request = CreateEmailOptions.builder()
+                    .from(fromEmail)
+                    .to(email)
+                    .subject("Codigo de Recuperacao de Senha")
+                    .html(buildResetCodeHtml(code))
+                    .build();
 
-            emailSender.send(message);
-            System.out.println("Email enviado com sucesso para: " + email);
-
+            CreateEmailResponse response = resend.emails().send(request);
+            log.info("Email de reset enviado para {} com id {}", email, response.getId());
         } catch (Exception e) {
-            System.err.println("Erro ao enviar email: " + e.getMessage());
-            //TO-DO: Em produção, tem que logar o erro mas não quebrar o fluxo
+            log.error("Erro ao enviar email de reset para {}", email, e);
         }
     }
 
     public void sendEmailVerification(String email, String nomeCompleto, String verificationLink) {
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(fromEmail);
-            message.setTo(email);
-            message.setSubject("Verificação de Email - Agenda RPG");
-            message.setText(buildVerificationEmailContent(nomeCompleto, verificationLink));
+            CreateEmailOptions request = CreateEmailOptions.builder()
+                    .from(fromEmail)
+                    .to(email)
+                    .subject("Verificacao de Email - Agenda RPG")
+                    .html(buildVerificationHtml(nomeCompleto, verificationLink))
+                    .build();
 
-            emailSender.send(message);
-            System.out.println("Email de verificação enviado com sucesso para: " + email);
-
+            CreateEmailResponse response = resend.emails().send(request);
+            log.info("Email de verificacao enviado para {} com id {}", email, response.getId());
         } catch (Exception e) {
-            System.err.println("Erro ao enviar email de verificação: " + e.getMessage());
-            //TO-DO: Em produção, tem que logar o erro mas não quebrar o fluxo
+            log.error("Erro ao enviar email de verificacao para {}", email, e);
         }
     }
 
-    private String buildEmailContent(String code) {
-        return "Olá!\n\n" +
-                "Seu código de recuperação de senha é: " + code + "\n\n" +
-                "Este código expira em 15 minutos.\n\n" +
-                "Se você não solicitou esta recuperação, ignore este email.\n\n" +
-                "Atenciosamente,\n" +
-                "Equipe do Sistema";
+    private String buildResetCodeHtml(String code) {
+        return """
+                <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">
+                  <h2 style="color: #1f2937;">Recuperacao de Senha</h2>
+                  <p>Seu codigo de recuperacao e:</p>
+                  <div style="font-size: 32px; font-weight: bold; letter-spacing: 8px; padding: 16px;
+                              background: #f3f4f6; border-radius: 8px; text-align: center; color: #4f46e5;">
+                    %s
+                  </div>
+                  <p>Este codigo expira em <strong>15 minutos</strong>.</p>
+                  <p style="color: #6b7280; font-size: 13px;">Se voce nao solicitou esta recuperacao, ignore este email.</p>
+                </div>
+                """.formatted(code);
     }
 
-    private String buildVerificationEmailContent(String nomeCompleto, String verificationLink) {
-        return "Olá " + nomeCompleto + "!\n\n" +
-                "Obrigado por se cadastrar no Agenda RPG!\n\n" +
-                "Para ativar sua conta, clique no link abaixo:\n" +
-                verificationLink + "\n\n" +
-                "Este link expira em 1 hora.\n\n" +
-                "Se você não se cadastrou em nossa plataforma, ignore este email.\n\n" +
-                "Caso tenha problemas com o link, copie e cole o endereço completo no seu navegador.\n\n" +
-                "Atenciosamente,\n" +
-                "Equipe Agenda RPG";
+    private String buildVerificationHtml(String nomeCompleto, String verificationLink) {
+        return """
+                <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">
+                  <h2 style="color: #1f2937;">Ola, %s!</h2>
+                  <p>Obrigado por se cadastrar no <strong>Agenda RPG</strong>!</p>
+                  <p>Clique no botao abaixo para ativar sua conta:</p>
+                  <a href="%s" style="display: inline-block; padding: 12px 24px; background: #4f46e5;
+                     color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">
+                    Verificar Email
+                  </a>
+                  <p style="color: #6b7280; font-size: 13px; margin-top: 16px;">Este link expira em 1 hora.</p>
+                  <p style="color: #9ca3af; font-size: 12px;">Caso o botao nao funcione, use este link: %s</p>
+                </div>
+                """.formatted(nomeCompleto, verificationLink, verificationLink);
     }
 }
