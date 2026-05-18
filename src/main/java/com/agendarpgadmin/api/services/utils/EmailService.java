@@ -1,53 +1,59 @@
 package com.agendarpgadmin.api.services.utils;
-import java.util.UUID;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import com.resend.Resend;
+import com.resend.services.emails.model.CreateEmailOptions;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class EmailService {
 
-    @Autowired
-    private JavaMailSender emailSender;
+    private static final Logger log = LoggerFactory.getLogger(EmailService.class);
 
-    @Value("${spring.mail.username}")
+    private final Resend resend;
+
+    public EmailService(@Value("${resend.api-key}") String apiKey) {
+        this.resend = new Resend(apiKey);
+    }
+
+    @Value("${resend.from-email}")
     private String fromEmail;
 
     public void sendResetCode(String email, String code) {
-        try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(fromEmail);
-            message.setTo(email);
-            message.setSubject("Código de Recuperação de Senha");
-            message.setText(buildEmailContent(code));
-
-            emailSender.send(message);
-            System.out.println("Email enviado com sucesso para: " + email);
-
-        } catch (Exception e) {
-            System.err.println("Erro ao enviar email: " + e.getMessage());
-            //TO-DO: Em produção, tem que logar o erro mas não quebrar o fluxo
-        }
+        sendTextEmail(email, "Código de Recuperação de Senha", buildEmailContent(code));
     }
 
     public void sendEmailVerification(String email, String nomeCompleto, String verificationLink) {
+        sendTextEmail(email, "Verificação de Email - Agenda RPG", buildVerificationEmailContent(nomeCompleto, verificationLink));
+    }
+
+    private void sendTextEmail(String to, String subject, String body) {
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(fromEmail);
-            message.setTo(email);
-            message.setSubject("Verificação de Email - Agenda RPG");
-            message.setText(buildVerificationEmailContent(nomeCompleto, verificationLink));
+            CreateEmailOptions request = CreateEmailOptions.builder()
+                    .from(fromEmail)
+                    .to(to)
+                    .subject(subject)
+                    .text(body)
+                    .build();
 
-            emailSender.send(message);
-            System.out.println("Email de verificação enviado com sucesso para: " + email);
+            resend.emails().send(request);
+            log.info("Email enviado com sucesso para: {}", to);
 
+        } catch (RuntimeException e) {
+            if (isSandboxRestriction(e)) {
+                log.error("Resend bloqueou envio para '{}' por conta sandbox. Para enviar para destinatarios reais, verifique um dominio em resend.com/domains e use resend.from-email com esse dominio.", to);
+            }
+
+            log.error("Erro ao enviar email para {}", to, e);
         } catch (Exception e) {
-            System.err.println("Erro ao enviar email de verificação: " + e.getMessage());
-            //TO-DO: Em produção, tem que logar o erro mas não quebrar o fluxo
+            log.error("Erro inesperado ao enviar email para {}", to, e);
         }
+    }
+
+    private boolean isSandboxRestriction(RuntimeException e) {
+        String message = e.getMessage();
+        return message != null && message.contains("You can only send testing emails to your own email address");
     }
 
     private String buildEmailContent(String code) {
