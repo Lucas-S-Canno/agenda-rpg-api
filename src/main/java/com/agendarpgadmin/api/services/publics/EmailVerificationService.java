@@ -37,8 +37,8 @@ public class EmailVerificationService {
     @Value("${app.email-verification.daily-resend-limit:5}")
     private int dailyResendLimit;
 
-    @Value("${app.frontend.base-url:http://localhost:3000}")
-    private String frontendBaseUrl;
+    @Value("${url.to-use-in-email}")
+    private String emailUrl;
 
     @Transactional
     public void createAndSendVerificationLink(UUID userId) {
@@ -59,7 +59,7 @@ public class EmailVerificationService {
         tokenRepository.save(verificationToken);
 
         // Montar link de verificação
-        String verificationLink = frontendBaseUrl + "/verify-email?token=" + token;
+        String verificationLink = emailUrl + "/verify-email?token=" + token;
 
         // Enviar email
         emailService.sendEmailVerification(user.getEmail(), user.getNomeCompleto(), verificationLink);
@@ -131,7 +131,7 @@ public class EmailVerificationService {
         tokenRepository.save(verificationToken);
 
         // Enviar novo email
-        String verificationLink = frontendBaseUrl + "/verify-email?token=" + token;
+        String verificationLink = emailUrl + "/verify-email?token=" + token;
         emailService.sendEmailVerification(user.getEmail(), user.getNomeCompleto(), verificationLink);
     }
 
