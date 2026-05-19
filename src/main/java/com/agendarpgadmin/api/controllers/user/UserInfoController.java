@@ -3,6 +3,7 @@ import java.util.UUID;
 
 import com.agendarpgadmin.api.dtos.ChangePasswordDTO;
 import com.agendarpgadmin.api.dtos.NarratorProfileDTO;
+import com.agendarpgadmin.api.dtos.NarratorSimpleDTO;
 import com.agendarpgadmin.api.dtos.ResponseDTO;
 import com.agendarpgadmin.api.dtos.UpdateProfileDTO;
 import com.agendarpgadmin.api.dtos.UserDTO;
@@ -57,6 +58,26 @@ public class UserInfoController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             ResponseDTO<NarratorProfileDTO> response = new ResponseDTO<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+                    null
+            );
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    @GetMapping("/narrators")
+    public ResponseEntity<ResponseDTO<List<NarratorSimpleDTO>>> getNarratorsSimple() {
+        try {
+            List<NarratorSimpleDTO> narrators = userInfoService.getNarratorsSimple();
+            ResponseDTO<List<NarratorSimpleDTO>> response = new ResponseDTO<>(
+                    HttpStatus.OK.value(),
+                    "Lista de narradores retornada com sucesso",
+                    narrators
+            );
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ResponseDTO<List<NarratorSimpleDTO>> response = new ResponseDTO<>(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
                     HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
                     null

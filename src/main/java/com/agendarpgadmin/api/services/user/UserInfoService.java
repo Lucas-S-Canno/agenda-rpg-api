@@ -2,12 +2,14 @@ package com.agendarpgadmin.api.services.user;
 import java.util.UUID;
 
 import com.agendarpgadmin.api.dtos.ChangePasswordDTO;
+import com.agendarpgadmin.api.dtos.NarratorSimpleDTO;
 import com.agendarpgadmin.api.dtos.ResponseDTO;
 import com.agendarpgadmin.api.dtos.UpdateProfileDTO;
 import com.agendarpgadmin.api.dtos.UserDTO;
 import com.agendarpgadmin.api.entities.UserEntity;
 import com.agendarpgadmin.api.repositories.UserRepository;
 import com.agendarpgadmin.api.services.UserCacheService;
+import com.agendarpgadmin.api.services.utils.ConstantUtilsService;
 import com.agendarpgadmin.api.services.utils.PasswordHashingService;
 import io.micrometer.observation.annotation.Observed;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +53,13 @@ public class UserInfoService {
     @Observed(name = "user.info.getbytipos", contextualName = "user-get-users-by-tipos")
     public List<UserDTO> getUsersByTipos(List<String> tipos) {
         return userRepository.findByTipoIn(tipos).stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
+
+    @Observed(name = "user.info.narratorsimple", contextualName = "user-get-narrators-simple")
+    public List<NarratorSimpleDTO> getNarratorsSimple() {
+        return userRepository.findByTipoIn(List.of(ConstantUtilsService.USER_TYPE_MASTER)).stream()
+                .map(user -> new NarratorSimpleDTO(user.getId(), user.getNomeCompleto()))
+                .collect(Collectors.toList());
     }
 
     @Observed(name = "user.info.create", contextualName = "user-create-user")
