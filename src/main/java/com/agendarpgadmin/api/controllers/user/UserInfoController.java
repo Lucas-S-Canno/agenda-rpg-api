@@ -72,7 +72,7 @@ public class UserInfoController {
             List<NarratorSimpleDTO> narrators = userInfoService.getNarratorsSimple();
             ResponseDTO<List<NarratorSimpleDTO>> response = new ResponseDTO<>(
                     HttpStatus.OK.value(),
-                    "Lista de narradores retornada com sucesso",
+                    "Lista de usuarios NRD, CRD e ADM retornada com sucesso",
                     narrators
             );
             return ResponseEntity.ok(response);

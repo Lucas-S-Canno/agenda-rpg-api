@@ -57,7 +57,11 @@ public class UserInfoService {
 
     @Observed(name = "user.info.narratorsimple", contextualName = "user-get-narrators-simple")
     public List<NarratorSimpleDTO> getNarratorsSimple() {
-        return userRepository.findByTipoIn(List.of(ConstantUtilsService.USER_TYPE_MASTER)).stream()
+        return userRepository.findByTipoIn(List.of(
+                        ConstantUtilsService.USER_TYPE_MASTER,
+                        ConstantUtilsService.USER_TYPE_COORD,
+                        ConstantUtilsService.USER_TYPE_ADMIN
+                )).stream()
                 .map(user -> new NarratorSimpleDTO(user.getId(), user.getNomeCompleto()))
                 .collect(Collectors.toList());
     }
