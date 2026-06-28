@@ -45,6 +45,27 @@ public class UserController {
        }
    }
 
+   @PostMapping("/validate-coordinator-admin")
+   @Observed(name = "admin.user.controller.validatecoordinatoradmin", contextualName = "http-validate-coordinator-admin")
+   public ResponseEntity<ResponseDTO<Boolean>> validateCoordinatorAdminUser(@RequestHeader("Authorization") String token) {
+       try {
+           userService.validateCoordinatorOrAdminUser(token);
+           ResponseDTO<Boolean> response = new ResponseDTO<>(
+                   HttpStatus.OK.value(),
+                   HttpStatus.OK.getReasonPhrase(),
+                   Boolean.TRUE
+           );
+           return ResponseEntity.ok(response);
+       } catch (Exception e) {
+           ResponseDTO<Boolean> response = new ResponseDTO<>(
+                   HttpStatus.UNAUTHORIZED.value(),
+                   "Usuário não autorizado ou não é coordenador/admin",
+                   Boolean.FALSE
+           );
+           return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+       }
+   }
+
     @GetMapping("/search")
     @Observed(name = "admin.user.controller.search", contextualName = "http-search-users")
     public ResponseEntity<ResponseDTO<Page<UserDTO>>> searchUsers(

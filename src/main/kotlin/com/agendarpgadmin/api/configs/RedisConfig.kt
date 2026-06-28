@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.cache.annotation.EnableCaching
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -14,6 +15,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer
 
 @Configuration
 @EnableCaching
+@ConditionalOnProperty(name = ["app.redis.enabled"], havingValue = "true", matchIfMissing = true)
 class RedisConfig {
 
     @Bean

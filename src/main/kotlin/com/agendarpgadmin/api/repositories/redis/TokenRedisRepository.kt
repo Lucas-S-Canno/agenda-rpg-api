@@ -1,6 +1,7 @@
 package com.agendarpgadmin.api.repositories.redis
 
 import org.springframework.data.redis.core.RedisTemplate
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.stereotype.Repository
 
 /**
@@ -8,5 +9,5 @@ import org.springframework.stereotype.Repository
  */
 @Repository
 class TokenRedisRepository(
-    redisTemplate: RedisTemplate<String, Any>
-) : BaseRedisRepository<String>(redisTemplate, "auth:token")
+    redisTemplateProvider: ObjectProvider<RedisTemplate<String, Any>>
+) : BaseRedisRepository<String>(redisTemplateProvider.getIfAvailable(), "auth:token")

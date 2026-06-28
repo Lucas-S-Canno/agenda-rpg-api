@@ -6,7 +6,7 @@ resource "upstash_redis_database" "cache" {
   auto_scale     = false
   database_name  = "AgendaRPG-cache"
   eviction       = true
-  primary_region = "us-west-2"
+  primary_region = "sa-east-1"
   read_regions   = []
   region         = "global"
   tls            = true

@@ -192,6 +192,40 @@ class JwtService(
         return validateAccessToken(token)?.get("tipo", String::class.java)
     }
 
+    /**
+     * Lê o tipo do usuário diretamente do token JWT, sem validar contra Redis.
+     * Útil para validações rápidas onde a whitelist não é crítica.
+     */
+    fun getUserTypeDirectFromToken(token: String): String? {
+        return try {
+            Jwts.parserBuilder()
+                .setSigningKey(signingKey)
+                .build()
+                .parseClaimsJws(token)
+                .body
+                .get("tipo", String::class.java)
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    /**
+     * Extrai email direto do token JWT, sem validar contra Redis.
+     * Útil para validações onde a whitelist não é crítica.
+     */
+    fun getEmailDirectFromToken(token: String): String? {
+        return try {
+            Jwts.parserBuilder()
+                .setSigningKey(signingKey)
+                .build()
+                .parseClaimsJws(token)
+                .body
+                .subject
+        } catch (_: Exception) {
+            null
+        }
+    }
+
     fun isUserOneOfTypes(token: String, allowedTypes: Set<String>): Boolean {
         val userType = getUserTypeFromToken(token)
         return userType != null && allowedTypes.contains(userType)

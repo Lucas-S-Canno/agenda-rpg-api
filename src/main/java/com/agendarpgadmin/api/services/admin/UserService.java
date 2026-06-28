@@ -9,6 +9,9 @@ import com.agendarpgadmin.api.services.utils.PasswordHashingService;
 import com.agendarpgadmin.api.services.utils.UtilsService;
 import com.agendarpgadmin.api.services.utils.JwtService;
 import io.micrometer.observation.annotation.Observed;
+import lombok.extern.java.Log;
+import lombok.extern.log4j.Log4j;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Log4j2
 @Service
 @Observed(name = "admin.user.service")
 public class UserService {
@@ -174,5 +178,37 @@ public class UserService {
         }
 
         return utilsService.convertToDTO(user);
+    }
+
+    @Observed(name = "admin.user.validatecoordinatororadmin", contextualName = "admin-validate-coordinator-or-admin-token")
+    public UserDTO validateCoordinatorOrAdminUser(String token) {
+        if (token == null) {
+            throw new IllegalArgumentException("Token is required");
+        }
+
+        String rawToken = token.startsWith("Bearer ") ? token.substring(7) : token;
+
+        // Valida o tipo do token DIRETAMENTE, sem dependência de Redis whitelist
+        // Isso permite testes manuais e tokens gerados fora do fluxo de login
+        String tokenType = jwtService.getUserTypeDirectFromToken(rawToken);
+        log.info("tipo de usuário: "+tokenType);
+        if (tokenType == null || !("CRD".equalsIgnoreCase(tokenType) || "ADM".equalsIgnoreCase(tokenType))) {
+            log.info("teste");
+            throw new SecurityException("User is not CRD or ADMIN");
+        }
+
+        // Extrai email também direto do token, sem Redis
+        String email = jwtService.getEmailDirectFromToken(rawToken);
+        if (email == null || email.isBlank()) {
+            throw new SecurityException("Token inválido ou expirado");
+        }
+
+        Optional<UserEntity> userOpt = userRepository.findByEmail(email);
+        log.info("email: "+email);
+        if (userOpt.isEmpty()) {
+            throw new IllegalArgumentException("User not found");
+        }
+
+        return utilsService.convertToDTO(userOpt.get());
     }
 }
