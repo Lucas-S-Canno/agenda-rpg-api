@@ -9,6 +9,7 @@ import com.agendarpgadmin.api.dtos.PasswordChangeCodeDTO;
 import com.agendarpgadmin.api.dtos.NarratorProfileDTO;
 import com.agendarpgadmin.api.dtos.NarratorSimpleDTO;
 import com.agendarpgadmin.api.dtos.ResponseDTO;
+import com.agendarpgadmin.api.exceptions.EmailAlreadyInUseException;
 import com.agendarpgadmin.api.dtos.UserDTO;
 import com.agendarpgadmin.api.services.user.EmailChangeVerificationService;
 import com.agendarpgadmin.api.services.user.PasswordChangeVerificationService;
@@ -146,6 +147,14 @@ public class UserInfoController {
             );
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
+            if (e instanceof EmailAlreadyInUseException) {
+                ResponseDTO<String> response = new ResponseDTO<>(
+                        HttpStatus.CONFLICT.value(),
+                        e.getMessage(),
+                        null
+                );
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+            }
             ResponseDTO<String> response = new ResponseDTO<>(
                     HttpStatus.BAD_REQUEST.value(),
                     e.getMessage(),

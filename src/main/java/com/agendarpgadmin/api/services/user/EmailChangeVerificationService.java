@@ -2,6 +2,7 @@ package com.agendarpgadmin.api.services.user;
 
 import com.agendarpgadmin.api.entities.EmailChangeChallengeEntity;
 import com.agendarpgadmin.api.entities.UserEntity;
+import com.agendarpgadmin.api.exceptions.EmailAlreadyInUseException;
 import com.agendarpgadmin.api.repositories.EmailChangeChallengeRepository;
 import com.agendarpgadmin.api.repositories.UserRepository;
 import com.agendarpgadmin.api.services.UserCacheService;
@@ -91,7 +92,7 @@ public class EmailChangeVerificationService {
         }
 
         if (userRepository.findByEmail(novoEmailNormalizado).isPresent()) {
-            throw new IllegalArgumentException("Este e-mail já está em uso por outro usuário");
+            throw new EmailAlreadyInUseException("Este e-mail já está em uso por outro usuário");
         }
 
         if (tokenVerificacao == null || tokenVerificacao.trim().isEmpty()) {
