@@ -15,4 +15,3 @@ public class NarratorSimpleDTO {
     private UUID id;
     private String nome;
 }
-

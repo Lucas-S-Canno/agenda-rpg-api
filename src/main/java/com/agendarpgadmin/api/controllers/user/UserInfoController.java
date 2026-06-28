@@ -2,11 +2,13 @@ package com.agendarpgadmin.api.controllers.user;
 import java.util.UUID;
 
 import com.agendarpgadmin.api.dtos.ChangePasswordDTO;
+import com.agendarpgadmin.api.dtos.ChangePasswordWithCodeDTO;
+import com.agendarpgadmin.api.dtos.PasswordChangeCodeDTO;
 import com.agendarpgadmin.api.dtos.NarratorProfileDTO;
 import com.agendarpgadmin.api.dtos.NarratorSimpleDTO;
 import com.agendarpgadmin.api.dtos.ResponseDTO;
-import com.agendarpgadmin.api.dtos.UpdateProfileDTO;
 import com.agendarpgadmin.api.dtos.UserDTO;
+import com.agendarpgadmin.api.services.user.PasswordChangeVerificationService;
 import com.agendarpgadmin.api.services.user.UserInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,6 +23,9 @@ public class UserInfoController {
 
     @Autowired
     private UserInfoService userInfoService;
+
+    @Autowired
+    private PasswordChangeVerificationService passwordChangeVerificationService;
 
     @GetMapping("/me")
     public ResponseEntity<ResponseDTO<UserDTO>> getAuthenticatedUser(org.springframework.security.core.Authentication authentication) {
@@ -132,6 +137,101 @@ public class UserInfoController {
                     HttpStatus.OK.value(),
                     "Senha alterada com sucesso",
                     null
+            );
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            ResponseDTO<String> response = new ResponseDTO<>(
+                    HttpStatus.BAD_REQUEST.value(),
+                    e.getMessage(),
+                    null
+            );
+            return ResponseEntity.badRequest().body(response);
+        } catch (Exception e) {
+            ResponseDTO<String> response = new ResponseDTO<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Erro interno do servidor",
+                    null
+            );
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    @PutMapping("/change-password/confirm")
+    public ResponseEntity<ResponseDTO<String>> confirmChangePassword(
+            @RequestBody ChangePasswordWithCodeDTO changePasswordDTO,
+            org.springframework.security.core.Authentication authentication
+    ) {
+        try {
+            String authenticatedEmail = authentication.getName();
+            userInfoService.changePasswordWithCode(authenticatedEmail, changePasswordDTO);
+
+            ResponseDTO<String> response = new ResponseDTO<>(
+                    HttpStatus.OK.value(),
+                    "Senha alterada com sucesso",
+                    null
+            );
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            ResponseDTO<String> response = new ResponseDTO<>(
+                    HttpStatus.BAD_REQUEST.value(),
+                    e.getMessage(),
+                    null
+            );
+            return ResponseEntity.badRequest().body(response);
+        } catch (Exception e) {
+            ResponseDTO<String> response = new ResponseDTO<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Erro interno do servidor",
+                    null
+            );
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    @PostMapping("/change-password/request-code")
+    public ResponseEntity<ResponseDTO<String>> requestChangePasswordCode(
+            org.springframework.security.core.Authentication authentication
+    ) {
+        try {
+            String authenticatedEmail = authentication.getName();
+            passwordChangeVerificationService.requestCode(authenticatedEmail);
+
+            ResponseDTO<String> response = new ResponseDTO<>(
+                    HttpStatus.OK.value(),
+                    "Código enviado para o e-mail cadastrado",
+                    "Código enviado com sucesso"
+            );
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            ResponseDTO<String> response = new ResponseDTO<>(
+                    HttpStatus.BAD_REQUEST.value(),
+                    e.getMessage(),
+                    null
+            );
+            return ResponseEntity.badRequest().body(response);
+        } catch (Exception e) {
+            ResponseDTO<String> response = new ResponseDTO<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "Erro interno do servidor",
+                    null
+            );
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    @PostMapping("/change-password/validate-code")
+    public ResponseEntity<ResponseDTO<String>> validateChangePasswordCode(
+            @RequestBody PasswordChangeCodeDTO codeDTO,
+            org.springframework.security.core.Authentication authentication
+    ) {
+        try {
+            String authenticatedEmail = authentication.getName();
+            String token = passwordChangeVerificationService.validateCode(authenticatedEmail, codeDTO.getCode());
+
+            ResponseDTO<String> response = new ResponseDTO<>(
+                    HttpStatus.OK.value(),
+                    "Código validado com sucesso",
+                    token
             );
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {

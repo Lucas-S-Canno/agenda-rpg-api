@@ -2,6 +2,7 @@ package com.agendarpgadmin.api.services.user;
 import java.util.UUID;
 
 import com.agendarpgadmin.api.dtos.ChangePasswordDTO;
+import com.agendarpgadmin.api.dtos.ChangePasswordWithCodeDTO;
 import com.agendarpgadmin.api.dtos.NarratorSimpleDTO;
 import com.agendarpgadmin.api.dtos.ResponseDTO;
 import com.agendarpgadmin.api.dtos.UpdateProfileDTO;
@@ -9,6 +10,7 @@ import com.agendarpgadmin.api.dtos.UserDTO;
 import com.agendarpgadmin.api.entities.UserEntity;
 import com.agendarpgadmin.api.repositories.UserRepository;
 import com.agendarpgadmin.api.services.UserCacheService;
+import com.agendarpgadmin.api.services.user.PasswordChangeVerificationService;
 import com.agendarpgadmin.api.services.utils.ConstantUtilsService;
 import com.agendarpgadmin.api.services.utils.PasswordHashingService;
 import io.micrometer.observation.annotation.Observed;
@@ -29,6 +31,9 @@ public class UserInfoService {
 
     @Autowired
     private PasswordHashingService passwordHashingService;
+
+    @Autowired
+    private PasswordChangeVerificationService passwordChangeVerificationService;
 
     @Autowired
     private UserCacheService userCacheService;
@@ -300,6 +305,45 @@ public class UserInfoService {
         user.setPassword(passwordHashingService.hashPassword(changePasswordDTO.getNovaSenha()));
         user = userRepository.save(user);
         // Evict cache: senha alterada → dados em cache estão desatualizados
+        userCacheService.evictUser(user.getId().toString());
+
+        return convertToDTO(user);
+    }
+
+    @Observed(name = "user.info.changepassword.withcode", contextualName = "user-change-password-with-code")
+    public UserDTO changePasswordWithCode(String authenticatedEmail, ChangePasswordWithCodeDTO changePasswordDTO) {
+        if (authenticatedEmail == null || authenticatedEmail.trim().isEmpty()) {
+            throw new RuntimeException("Token de autenticação inválido");
+        }
+
+        Optional<UserEntity> userOptional = userRepository.findByEmail(authenticatedEmail);
+        if (userOptional.isEmpty()) {
+            throw new RuntimeException("Usuário não encontrado");
+        }
+
+        UserEntity user = userOptional.get();
+
+        if (!user.getEmail().equals(authenticatedEmail)) {
+            throw new RuntimeException("Token de autenticação não corresponde ao usuário");
+        }
+
+        if (changePasswordDTO.getTokenVerificacao() == null || changePasswordDTO.getTokenVerificacao().trim().isEmpty()) {
+            throw new RuntimeException("Token de validação não informado");
+        }
+
+        passwordChangeVerificationService.assertValidatedToken(authenticatedEmail, changePasswordDTO.getTokenVerificacao());
+
+        if (changePasswordDTO.getNovaSenha() == null || changePasswordDTO.getNovaSenha().trim().isEmpty()) {
+            throw new RuntimeException("Nova senha não pode ser vazia");
+        }
+
+        if (!changePasswordDTO.getNovaSenha().equals(changePasswordDTO.getConfirmacaoNovaSenha())) {
+            throw new RuntimeException("Nova senha e confirmação não coincidem");
+        }
+
+        user.setPassword(passwordHashingService.hashPassword(changePasswordDTO.getNovaSenha()));
+        user = userRepository.save(user);
+        passwordChangeVerificationService.consumeValidatedToken(authenticatedEmail, changePasswordDTO.getTokenVerificacao());
         userCacheService.evictUser(user.getId().toString());
 
         return convertToDTO(user);

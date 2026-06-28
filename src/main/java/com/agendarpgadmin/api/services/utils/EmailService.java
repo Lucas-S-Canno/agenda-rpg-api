@@ -38,6 +38,22 @@ public class EmailService {
         }
     }
 
+    public void sendPasswordChangeCode(String email, String code) {
+        try {
+            CreateEmailOptions request = CreateEmailOptions.builder()
+                    .from(fromEmail)
+                    .to(email)
+                    .subject("Codigo de Confirmacao para Troca de Senha")
+                    .html(buildPasswordChangeCodeHtml(code))
+                    .build();
+
+            CreateEmailResponse response = resend.emails().send(request);
+            log.info("Email de confirmacao de troca de senha enviado para {} com id {}", email, response.getId());
+        } catch (Exception e) {
+            log.error("Erro ao enviar email de confirmacao de troca de senha para {}", email, e);
+        }
+    }
+
     public void sendEmailVerification(String email, String nomeCompleto, String verificationLink) {
         try {
             CreateEmailOptions request = CreateEmailOptions.builder()
@@ -65,6 +81,21 @@ public class EmailService {
                   </div>
                   <p>Este codigo expira em <strong>15 minutos</strong>.</p>
                   <p style="color: #6b7280; font-size: 13px;">Se voce nao solicitou esta recuperacao, ignore este email.</p>
+                </div>
+                """.formatted(code);
+    }
+
+    private String buildPasswordChangeCodeHtml(String code) {
+        return """
+                <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">
+                  <h2 style="color: #1f2937;">Confirmacao de Troca de Senha</h2>
+                  <p>Use o codigo abaixo para confirmar a troca de senha da sua conta:</p>
+                  <div style="font-size: 32px; font-weight: bold; letter-spacing: 8px; padding: 16px;
+                              background: #f3f4f6; border-radius: 8px; text-align: center; color: #4f46e5;">
+                    %s
+                  </div>
+                  <p>Este codigo expira em <strong>10 minutos</strong>.</p>
+                  <p style="color: #6b7280; font-size: 13px;">Se voce nao solicitou esta acao, ignore este email.</p>
                 </div>
                 """.formatted(code);
     }
